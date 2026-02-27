@@ -1,4 +1,6 @@
-enum MessageType { text, image, file }
+import '../../../home/domain/models/doctor.dart';
+
+enum MessageType { text, image, file, recommendation }
 
 class ChatMessage {
   final String text;
@@ -7,6 +9,7 @@ class ChatMessage {
   final MessageType type;
   final String? attachmentName;
   final String? attachmentPath;
+  final Doctor? recommendedDoctor;
 
   ChatMessage({
     required this.text,
@@ -15,5 +18,6 @@ class ChatMessage {
     this.type = MessageType.text,
     this.attachmentName,
     this.attachmentPath,
+    this.recommendedDoctor,
   });
 }

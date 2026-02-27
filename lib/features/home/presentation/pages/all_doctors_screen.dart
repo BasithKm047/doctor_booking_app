@@ -1,9 +1,9 @@
+import 'package:doctor_booking_app/features/home/presentation/widgets/doctor_card.dart';
 import 'package:flutter/material.dart';
 import '../../domain/models/doctor.dart';
 import '../widgets/all_doctors_app_bar.dart';
 import '../widgets/all_doctors_search_bar.dart';
 import '../widgets/specialty_chip_list.dart';
-import '../widgets/doctor_booking_card.dart';
 
 class AllDoctorsScreen extends StatelessWidget {
   const AllDoctorsScreen({super.key});
@@ -100,7 +100,21 @@ class AllDoctorsScreen extends StatelessWidget {
                 itemCount: doctors.length,
                 padding: const EdgeInsets.only(bottom: 24),
                 itemBuilder: (context, index) {
-                  return DoctorBookingCard(doctor: doctors[index]);
+                  return TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    duration: Duration(milliseconds: 500 + (index * 100)),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, child) {
+                      return Opacity(
+                        opacity: value,
+                        child: Transform.translate(
+                          offset: Offset(0, 50 * (1 - value)),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: DoctorCard(doctor: doctors[index],isDark: index % 2 != 0),
+                  );
                 },
               ),
             ),

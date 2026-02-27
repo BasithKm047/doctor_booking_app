@@ -19,7 +19,12 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             children: [
               const CircleAvatar(
                 radius: 20,
-                backgroundImage: AssetImage('assets/images/doctor_image_1.png'),
+                backgroundColor: Color(0xFFE0E7FF),
+                child: Icon(
+                  Icons.smart_toy_rounded,
+                  color: Color(0xFF4F46E5),
+                  size: 24,
+                ),
               ),
               Positioned(
                 bottom: 0,
@@ -37,20 +42,24 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             ],
           ),
           const SizedBox(width: 12),
-          Column(
+          const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Prescription AI',
+              Text(
+                'AI Health Assistant',
                 style: TextStyle(
                   color: Color(0xFF1E293B),
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const Text(
-                'Online',
-                style: TextStyle(color: Color(0xFF22C55E), fontSize: 14),
+              Text(
+                'Always active',
+                style: TextStyle(
+                  color: Color(0xFF4F46E5),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),

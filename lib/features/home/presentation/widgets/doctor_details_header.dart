@@ -13,9 +13,17 @@ class DoctorDetailsHeader extends StatelessWidget {
         const SizedBox(height: 24),
         Stack(
           children: [
-            CircleAvatar(
-              radius: 60,
-              backgroundImage: AssetImage(doctor.imagePath),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(50),
+                child: Image.asset(
+                  doctor.imagePath,
+                  height: 140,
+                  width: 140,
+                  fit: BoxFit.contain,
+                ),
+              ),
             ),
             Positioned(
               bottom: 4,

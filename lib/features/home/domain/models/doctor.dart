@@ -7,11 +7,12 @@ class Doctor {
   final int reviews;
   final String nextAvailable;
   final String imagePath;
-  final bool isFavorite;
 
   final String about;
   final String experience;
   final double fee;
+
+  final int availabilitySlots;
 
   Doctor({
     required this.id,
@@ -25,6 +26,6 @@ class Doctor {
     required this.about,
     required this.experience,
     required this.fee,
-    this.isFavorite = false,
+    this.availabilitySlots = 4,
   });
 }

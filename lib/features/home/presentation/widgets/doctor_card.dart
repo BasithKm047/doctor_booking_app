@@ -1,130 +1,164 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../domain/models/doctor.dart';
 import '../pages/doctor_details_screen.dart';
 
 class DoctorCard extends StatelessWidget {
   final Doctor doctor;
-  const DoctorCard({super.key, required this.doctor});
+  final bool isDark;
+
+  const DoctorCard({super.key, required this.doctor, this.isDark = false});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DoctorDetailsScreen(doctor: doctor),
+    final backgroundColor = isDark
+        ? AppColors.medConnectPrimary.withValues(alpha: .7)
+        : const Color(0xFFF1F5F9);
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    final subTextColor = isDark ? Colors.white70 : const Color(0xFF64748B);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(32),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          // Doctor Image - Placed on the right
+          Positioned(
+            right: -5,
+            bottom: 70, // Adjusted to sit at the bottom or slightly offset
+            child: Image.asset(
+              doctor.imagePath,
+              height: 180,
+              width: 180,
+              fit: BoxFit.contain,
+            ),
           ),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFF1F5F9)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.asset(
-                doctor.imagePath,
-                height: 100,
-                width: 100,
-                fit: BoxFit.contain,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          doctor.name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
-                          ),
-                        ),
-                      ),
-                      Icon(
-                        doctor.isFavorite
-                            ? Icons.bookmark
-                            : Icons.bookmark_border,
-                        color: doctor.isFavorite
-                            ? const Color(0xFF1D4ED8)
-                            : const Color(0xFF94A3B8),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    '${doctor.specialty} • ${doctor.hospital}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF64748B),
+    
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Badges
+                Row(
+                  children: [
+                    _buildBadge(
+                      Icons.star,
+                      doctor.rating.toString(),
+                      isDark ? Colors.white : const Color(0xFF1E293B),
+                      const Color(0xFFFACC15),
+                      isDark,
+                    ),
+                    const SizedBox(width: 12),
+                    _buildBadge(
+                      Icons.monetization_on,
+                      "\$${doctor.fee.toInt()}/hr",
+                      isDark ? Colors.white : const Color(0xFF1E293B),
+                      const Color(0xFF22C55E),
+                      isDark,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+    
+                // Doctor Name & Specialty
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.45,
+                  child: Text(
+                    doctor.name,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 18),
-                      const SizedBox(width: 4),
-                      Text(
-                        doctor.rating.toString(),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '(${doctor.reviews} Reviews)',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF94A3B8),
-                        ),
-                      ),
-                    ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  doctor.specialty,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: subTextColor,
+                    fontWeight: FontWeight.w500,
                   ),
-                  const SizedBox(height: 12),
-                  Container(
+                ),
+                const SizedBox(height: 24),
+    
+                // Book Now Button
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            DoctorDetailsScreen(doctor: doctor),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDark
+                        ? Colors.white
+                        : AppColors.medConnectPrimary,
+                    foregroundColor: isDark
+                        ? AppColors.medConnectPrimary
+                        : Colors.white,
+                    elevation: 0,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+                      horizontal: 24,
+                      vertical: 12,
                     ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEFF6FF),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'Next Available: ${doctor.nextAvailable}',
-                      style: const TextStyle(
-                        color: Color(0xFF1D4ED8),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                ],
-              ),
+                  child: const Text(
+                    'Book Now',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBadge(
+    IconData icon,
+    String text,
+    Color textColor,
+    Color iconColor,
+    bool isDark,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: iconColor, size: 16),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+        ],
       ),
     );
   }

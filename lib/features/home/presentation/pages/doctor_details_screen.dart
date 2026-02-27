@@ -13,6 +13,11 @@ class DoctorDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Ensure keyboard is dismissed when viewing doctor details
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).unfocus();
+    });
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(

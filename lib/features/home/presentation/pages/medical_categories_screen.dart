@@ -128,6 +128,7 @@ class MedicalCategoriesScreen extends StatelessWidget {
 
   Widget _buildCategoryCard(MedicalCategory category) {
     return Container(
+      
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -144,6 +145,8 @@ class MedicalCategoriesScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
+            height: 88,
+            width: 88,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: category.color.withValues(alpha: 0.05),

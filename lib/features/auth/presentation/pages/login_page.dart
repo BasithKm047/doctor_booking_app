@@ -6,7 +6,8 @@ import '../widgets/login_form.dart';
 import '../widgets/login_header.dart';
 import '../widgets/social_auth_group.dart';
 import '../widgets/verification_section.dart';
-import 'package:doctor_booking_app/features/home/presentation/pages/main_wrapper.dart';
+
+import 'package:doctor_booking_app/features/chat/presentation/pages/chat_page.dart';
 
 class LoginPage extends StatefulWidget {
   final bool isInitialLogin;
@@ -46,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
     if (_mobileFieldKey.currentState!.validate()) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const MainWrapper()),
+        MaterialPageRoute(builder: (context) => const ChatPage()),
       );
     }
   }
@@ -56,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const MainWrapper()),
+        MaterialPageRoute(builder: (context) => const ChatPage()),
         (route) => false,
       );
     }
@@ -114,21 +115,6 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildBackButton() {
-    return InkWell(
-      onTap: () => Navigator.pop(context),
-      child: Container(
-        height: 50,
-        width: 50,
-        decoration: const BoxDecoration(
-          color: Color(0xFFF1F5F9),
-          shape: BoxShape.circle,
-        ),
-        child: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
       ),
     );
   }

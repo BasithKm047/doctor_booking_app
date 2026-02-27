@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:doctor_booking_app/features/home/data/doctor_data.dart' as doc_data;
 import 'package:doctor_booking_app/features/home/presentation/pages/medical_categories_screen.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -13,138 +16,83 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final categories = [
+    final medicalCategories = [
       MedicalCategory(
         title: 'Dental',
-        icon: Icons.health_and_safety,
+        icon: Icons.details,
         color: AppColors.medConnectPrimary,
       ),
       MedicalCategory(
-        title: 'Cardio',
-        icon: Icons.favorite,
+        title: 'Cardiology',
+        icon: Icons.favorite_outline,
         color: AppColors.medConnectPrimary,
       ),
       MedicalCategory(
-        title: 'Eye Care',
-        icon: Icons.remove_red_eye,
+        title: 'Lungs',
+        icon: Icons.air,
         color: AppColors.medConnectPrimary,
       ),
       MedicalCategory(
         title: 'Brain',
-        icon: Icons.psychology,
+        icon: Icons.psychology_outlined,
         color: AppColors.medConnectPrimary,
       ),
       MedicalCategory(
-        title: 'Skin',
-        icon: Icons.spa,
+        title: 'Ear',
+        icon: Icons.hearing_outlined,
         color: AppColors.medConnectPrimary,
       ),
       MedicalCategory(
-        title: 'Kids',
-        icon: Icons.child_care,
-        color: AppColors.medConnectPrimary,
-      ),
-      MedicalCategory(
-        title: 'Physio',
-        icon: Icons.fitness_center,
-        color: AppColors.medConnectPrimary,
-      ),
-      MedicalCategory(
-        title: 'Others',
-        icon: Icons.more_horiz,
+        title: 'Optometry',
+        icon: Icons.remove_red_eye_outlined,
         color: AppColors.medConnectPrimary,
       ),
     ];
 
-    final doctors = [
-      Doctor(
-        id: '1',
-        name: 'Dr. James Robinson',
-        specialty: 'Cardiologist',
-        hospital: 'Heart Hospital',
-        rating: 4.8,
-        reviews: 120,
-        nextAvailable: '10:30 AM',
-        imagePath: 'assets/images/doctor_image_1.png',
-        about:
-            'Dr. James Robinson is a renowned cardiologist with extensive experience in heart surgery and preventive care.',
-        experience: '15 years',
-        fee: 120.0,
-        isFavorite: true,
-      ),
-      Doctor(
-        id: '2',
-        name: 'Dr. Sarah Jenkins',
-        specialty: 'Dentist',
-        hospital: 'Smile Clinic',
-        rating: 4.9,
-        reviews: 85,
-        nextAvailable: 'Tomorrow',
-        imagePath: 'assets/images/doctor_image_1.png',
-        about:
-            'Dr. Sarah Jenkins specializes in restorative and cosmetic dentistry with a focus on patient comfort.',
-        experience: '10 years',
-        fee: 80.0,
-      ),
-      Doctor(
-        id: '3',
-        name: 'Dr. Michael Chen',
-        specialty: 'Eye Specialist',
-        hospital: 'Vision Center',
-        rating: 4.7,
-        reviews: 210,
-        nextAvailable: 'Oct 26',
-        imagePath: 'assets/images/doctor_image_1.png',
-        about:
-            'Dr. Michael Chen is a leading expert in ophthalmology, providing advanced treatments for vision health.',
-        experience: '12 years',
-        fee: 110.0,
-      ),
-    ];
+    final doctors = doc_data.doctors;
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const HomeAppBar(),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-            _buildSearchBar(),
-            const SizedBox(height: 24),
-            _buildFilterSection(),
-            const SizedBox(height: 32),
-            _buildSectionHeader(
-              'Categories',
-              'See All',
-              onAction: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const MedicalCategoriesScreen(),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            _buildCategoryGrid(categories),
-            const SizedBox(height: 32),
-            _buildSectionHeader(
-              'Recommended Doctors',
-              'View All',
-              onAction: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AllDoctorsScreen(),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            _buildDoctorList(doctors),
-            const SizedBox(height: 24),
-          ],
-        ),
+      body: ListView(
+        children: [
+          const SizedBox(height: 20),
+          _buildSearchBar(),
+          const SizedBox(height: 24),
+          _buildFilterSection(),
+          const SizedBox(height: 32),
+          _buildSectionHeader(
+            'Categories',
+            'See All',
+            onAction: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const MedicalCategoriesScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+          _buildCategoryGrid(medicalCategories),
+          const SizedBox(height: 32),
+          _buildSectionHeader(
+            'Recommended Doctors',
+            'View All',
+            onAction: () {
+              log('Navigating to AllDoctorsScreen');
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AllDoctorsScreen(),
+      
+                ),
+              );
+              log('AllDoctorsScreen');
+            },
+          ),
+          const SizedBox(height: 20),
+          _buildDoctorList(doctors),
+          const SizedBox(height: 24),
+        ],
       ),
     );
   }
@@ -251,14 +199,21 @@ class HomeScreen extends StatelessWidget {
               color: Color(0xFF1E293B),
             ),
           ),
-          GestureDetector(
-            onTap: onAction,
-            child: Text(
-              action,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.medConnectPrimary,
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onAction,
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Text(
+                  action,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.medConnectPrimary,
+                  ),
+                ),
               ),
             ),
           ),
@@ -273,10 +228,10 @@ class HomeScreen extends StatelessWidget {
       child: GridView.count(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        crossAxisCount: 4,
-        mainAxisSpacing: 20,
+        crossAxisCount: 3,
+        mainAxisSpacing: 24,
         crossAxisSpacing: 16,
-        childAspectRatio: 0.8,
+        childAspectRatio: 0.9,
         children: categories.map((cat) => CategoryIcon(category: cat)).toList(),
       ),
     );
@@ -290,7 +245,7 @@ class HomeScreen extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         itemCount: doctors.length,
         itemBuilder: (context, index) {
-          return DoctorCard(doctor: doctors[index]);
+          return DoctorCard(doctor: doctors[index], isDark: index % 2 != 0);
         },
       ),
     );

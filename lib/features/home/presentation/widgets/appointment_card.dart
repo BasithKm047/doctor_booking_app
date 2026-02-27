@@ -24,12 +24,12 @@ class AppointmentCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 child: Image.asset(
                   appointment.imagePath,
-                  height: 64,
-                  width: 64,
+                  height: 100,
+                  width: 80,
                   fit: BoxFit.cover,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 20),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

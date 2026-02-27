@@ -19,6 +19,8 @@ class DoctorBookingCard extends StatelessWidget {
         );
       },
       child: Container(
+        height: 300,
+        width: double.infinity,
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
@@ -26,7 +28,7 @@ class DoctorBookingCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: const Color(0xFFF1F5F9)),
         ),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Stack(

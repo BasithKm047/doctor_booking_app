@@ -1,3 +1,4 @@
+import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class ChatInputArea extends StatelessWidget {
@@ -12,10 +13,21 @@ class ChatInputArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-      decoration: const BoxDecoration(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+      decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
+        border: Border(
+          // ignore: deprecated_member_use
+          top: BorderSide(color: const Color(0xFFE2E8F0).withOpacity(0.5)),
+        ),
+        boxShadow: [
+          BoxShadow(
+            // ignore: deprecated_member_use
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -25,20 +37,21 @@ class ChatInputArea extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Container(
-              height: 48,
+              height: 52,
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(24),
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(26),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
               ),
               child: TextField(
                 controller: controller,
                 decoration: const InputDecoration(
-                  hintText: 'Type a message...',
-                  hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 15),
+                  hintText: 'Ask me about symptoms...',
+                  hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: 20,
-                    vertical: 10,
+                    vertical: 14,
                   ),
                 ),
               ),
@@ -47,14 +60,26 @@ class ChatInputArea extends StatelessWidget {
           const SizedBox(width: 12),
           InkWell(
             onTap: onSend,
+            borderRadius: BorderRadius.circular(26),
             child: Container(
-              height: 48,
-              width: 48,
-              decoration: const BoxDecoration(
-                color: Color(0xFF1D4ED8),
+              height: 52,
+              width: 52,
+              decoration: BoxDecoration(
+                color: AppColors.medConnectPrimary,
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.medConnectPrimary.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              child: const Icon(Icons.send, color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.send_rounded,
+                color: Colors.white,
+                size: 22,
+              ),
             ),
           ),
         ],
@@ -64,13 +89,14 @@ class ChatInputArea extends StatelessWidget {
 
   Widget _buildActionButton(IconData icon) {
     return Container(
-      height: 40,
-      width: 40,
+      height: 44,
+      width: 44,
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: Icon(icon, color: const Color(0xFF64748B), size: 20),
+      child: Icon(icon, color: const Color(0xFF64748B), size: 18),
     );
   }
 }
