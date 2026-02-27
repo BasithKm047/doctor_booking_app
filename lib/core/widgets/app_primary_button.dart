@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
 class AppPrimaryButton extends StatelessWidget {
+  final double width;
+
   final String text;
   final IconData? icon;
   final VoidCallback onPressed;
@@ -11,6 +13,7 @@ class AppPrimaryButton extends StatelessWidget {
   final double borderRadius;
 
   const AppPrimaryButton({
+    this.width = double.infinity,
     super.key,
     required this.text,
     required this.onPressed,
@@ -18,7 +21,7 @@ class AppPrimaryButton extends StatelessWidget {
     this.backgroundColor,
     this.foregroundColor = Colors.white,
     this.height = 56.0,
-    this.borderRadius = 28.0,
+    this.borderRadius = 15,
   });
 
   @override
@@ -27,7 +30,7 @@ class AppPrimaryButton extends StatelessWidget {
         backgroundColor ?? AppColors.medConnectPrimary;
 
     return SizedBox(
-      width: double.infinity,
+      width: width,
       height: height,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
@@ -48,7 +51,7 @@ class AppPrimaryButton extends StatelessWidget {
               Text(
                 text,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),

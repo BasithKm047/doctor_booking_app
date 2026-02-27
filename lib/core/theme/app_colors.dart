@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // MedConnect Branding
-  static const Color medConnectPrimary = Color(0xFF1E293B);
+  static const Color medConnectPrimary = Color.fromARGB(255, 51, 62, 82);
   static const Color medConnectBackground = Color(0xFFF8FAFC);
   static const Color medConnectTitle = Color(0xFF0F172A);
   static const Color medConnectSubtitle = Color(0xFF64748B);
