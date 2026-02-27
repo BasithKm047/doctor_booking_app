@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../domain/models/doctor.dart';
+import '../../../home/domain/models/doctor.dart';
 
 class PaymentDoctorCard extends StatelessWidget {
   final Doctor doctor;
@@ -78,8 +78,8 @@ class PaymentDoctorCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             child: Image.asset(
               doctor.imagePath,
-              height: 90,
-              width: 90,
+              height: 100,
+              width: 80,
               fit: BoxFit.cover,
             ),
           ),

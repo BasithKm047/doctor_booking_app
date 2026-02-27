@@ -1,6 +1,6 @@
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
-import '../../domain/models/doctor.dart';
+import '../../../home/domain/models/doctor.dart';
 import '../widgets/payment_doctor_card.dart';
 import '../widgets/payment_info_card.dart';
 import '../widgets/payment_method_option.dart';

@@ -1,4 +1,5 @@
 import 'package:doctor_booking_app/features/user/auth/presentation/pages/login_page.dart';
+import 'package:doctor_booking_app/features/user/home/presentation/pages/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
       // For now, let's keep it on system theme, but it will default to light
       // as per your main color preference.
       themeMode: ThemeMode.system,
-      home: const LoginPage(),
+      home: const HomeScreen(),
     );
   }
 }
