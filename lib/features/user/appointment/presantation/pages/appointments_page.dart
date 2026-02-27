@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../domain/models/appointment.dart';
+import '../../../home/domain/models/appointment.dart';
 import '../widgets/appointment_card.dart';
 import '../widgets/appointment_section_header.dart';
 

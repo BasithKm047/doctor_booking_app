@@ -16,17 +16,22 @@ class ProfileHeader extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
+                // boxShadow: [
+                //   BoxShadow(
+                //     color: Colors.black.withValues(alpha: 0.1),
+                //     blurRadius: 20,
+                //     offset: const Offset(0, 10),
+                //   ),
+                // ],r
               ),
-              child: const CircleAvatar(
-                radius: 70,
-                backgroundImage: AssetImage('assets/images/doctor_image_1.png'),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(100),
+                child: Image.asset(
+                  'assets/images/doctor_image_1.png',
+                  width: 120,
+                  height: 150,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
             Positioned(

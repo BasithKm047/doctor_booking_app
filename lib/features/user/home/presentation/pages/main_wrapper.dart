@@ -1,9 +1,9 @@
 import 'package:doctor_booking_app/features/user/chat/presentation/pages/chat_page.dart';
-import 'package:doctor_booking_app/features/user/home/presentation/pages/appointments_page.dart';
+import 'package:doctor_booking_app/features/user/appointment/presantation/pages/appointments_page.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_colors.dart';
 import 'home_screen.dart';
-import 'profile_page.dart';
+import '../../../profile/presentation/pages/profile_page.dart';
 
 class MainWrapper extends StatefulWidget {
   final int initialIndex;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../../domain/models/appointment.dart';
+import '../../../home/domain/models/appointment.dart';
 
 class AppointmentCard extends StatelessWidget {
   final Appointment appointment;
