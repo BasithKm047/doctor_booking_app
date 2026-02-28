@@ -23,7 +23,7 @@ class ProfileHeader extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: AppColors.medConnectSubtitle,
-                    width: 3,
+                    width: 1,
                   ),
                 ),
                 child: const ClipOval(
