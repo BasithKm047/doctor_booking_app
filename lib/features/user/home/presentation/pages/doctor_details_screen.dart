@@ -28,7 +28,7 @@ class DoctorDetailsScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Doctor Profile',
+          'Book Appointment',
           style: TextStyle(
             color: Color(0xFF0F172A),
             fontSize: 18,
@@ -69,6 +69,34 @@ class DoctorDetailsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             const DoctorAvailabilityPicker(),
+            const SizedBox(height: 32),
+            const Text(
+              'Tell the doctor about your problem',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.medConnectPrimary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText:
+                    'Enter your symptoms or any specific concerns here...',
+                hintStyle: const TextStyle(
+                  color: Color(0xFF94A3B8),
+                  fontSize: 14,
+                ),
+                filled: true,
+                fillColor: const Color(0xFFF8FAFC),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.all(16),
+              ),
+            ),
             const SizedBox(height: 32),
             const DoctorLocationCard(),
             const SizedBox(height: 40),
