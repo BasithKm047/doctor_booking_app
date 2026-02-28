@@ -1,4 +1,4 @@
-import 'package:doctor_booking_app/features/doctor/home_screen/presentation/pages/doctor_home_page.dart';
+import 'package:doctor_booking_app/features/doctor/home_screen/presentation/pages/doctor_main_wrapper.dart';
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:doctor_booking_app/features/doctor/registeration/presentation/widgets/step_1_personal_details.dart';
 import 'package:doctor_booking_app/features/doctor/registeration/presentation/widgets/step_2_professional_qualifications.dart';
@@ -89,7 +89,7 @@ class _DoctorRegistrationPageState extends State<DoctorRegistrationPage> {
       // navigate to home Screen
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const DoctorHomePage()),
+        MaterialPageRoute(builder: (context) => const DoctorMainWrapper()),
         (route) => false,
       );
     }

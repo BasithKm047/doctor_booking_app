@@ -1,8 +1,8 @@
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
+import 'package:doctor_booking_app/features/doctor/appointment/presantation/pages/doctor_appointments_page.dart';
 import 'package:doctor_booking_app/features/doctor/home_screen/domain/entities/doctor_request_entity.dart';
 import 'package:doctor_booking_app/features/doctor/home_screen/domain/entities/schedule_item_entity.dart';
 import 'package:doctor_booking_app/features/doctor/home_screen/presentation/widgets/availability_status_card.dart';
-import 'package:doctor_booking_app/features/doctor/home_screen/presentation/widgets/home_bottom_nav_bar.dart';
 import 'package:doctor_booking_app/features/doctor/home_screen/presentation/widgets/home_header.dart';
 import 'package:doctor_booking_app/features/doctor/home_screen/presentation/widgets/pending_request_card.dart';
 import 'package:doctor_booking_app/features/doctor/home_screen/presentation/widgets/schedule_timeline_item.dart';
@@ -16,8 +16,6 @@ class DoctorHomePage extends StatefulWidget {
 }
 
 class _DoctorHomePageState extends State<DoctorHomePage> {
-  int _currentIndex = 0;
-
   final List<DoctorRequest> _mockRequests = [
     DoctorRequest(
       id: '1',
@@ -85,7 +83,15 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
                           _buildBadge('3 NEW'),
                           const SizedBox(width: 12),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const DoctorAppointmentsPage(),
+                                ),
+                              );
+                            },
                             style: TextButton.styleFrom(
                               padding: EdgeInsets.zero,
                               minimumSize: Size.zero,
@@ -137,14 +143,6 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: HomeBottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
       ),
     );
   }

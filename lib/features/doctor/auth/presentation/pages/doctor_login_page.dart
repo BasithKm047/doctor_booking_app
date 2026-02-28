@@ -1,5 +1,6 @@
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:doctor_booking_app/core/widgets/app_primary_button.dart';
+import 'package:doctor_booking_app/features/doctor/home_screen/presentation/pages/doctor_main_wrapper.dart';
 import 'package:doctor_booking_app/features/doctor/registeration/presentation/pages/doctor_registration_page.dart';
 import 'package:flutter/material.dart';
 import '../widgets/doctor_auth_toggle_section.dart';
@@ -54,10 +55,10 @@ class _DoctorLoginPageState extends State<DoctorLoginPage> {
 
     if (_formKey.currentState!.validate()) {
       // In a real app, perform email/password auth here
-      // For now, let's just show the registration page as requested
-      Navigator.push(
+      // For now, let's navigate to the dashboard wrapper
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const DoctorRegistrationPage()),
+        MaterialPageRoute(builder: (context) => const DoctorMainWrapper()),
       );
     }
   }
