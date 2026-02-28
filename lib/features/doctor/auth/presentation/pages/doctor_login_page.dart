@@ -1,13 +1,11 @@
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:doctor_booking_app/core/widgets/app_primary_button.dart';
+import 'package:doctor_booking_app/features/doctor/registeration/presentation/pages/doctor_registration_page.dart';
 import 'package:flutter/material.dart';
 import '../widgets/doctor_auth_toggle_section.dart';
 import '../widgets/doctor_login_form.dart';
 import '../widgets/doctor_login_header.dart';
 import '../widgets/doctor_social_auth_group.dart';
-
-// Assuming there's a doctor dashboard or home, using ChatPage as placeholder if needed
-import 'package:doctor_booking_app/features/user/chat/presentation/pages/chat_page.dart';
 
 class DoctorLoginPage extends StatefulWidget {
   final bool isInitialLogin;
@@ -44,12 +42,22 @@ class _DoctorLoginPageState extends State<DoctorLoginPage> {
   }
 
   void _signIn() {
+    // For UI demonstration purposes, allow navigation to registration
+    // even if validation fails or directly if it's a sign-up action.
+    if (!_isLoginNotifier.value) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const DoctorRegistrationPage()),
+      );
+      return;
+    }
+
     if (_formKey.currentState!.validate()) {
       // In a real app, perform email/password auth here
-      Navigator.pushAndRemoveUntil(
+      // For now, let's just show the registration page as requested
+      Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const ChatPage()),
-        (route) => false,
+        MaterialPageRoute(builder: (context) => const DoctorRegistrationPage()),
       );
     }
   }
