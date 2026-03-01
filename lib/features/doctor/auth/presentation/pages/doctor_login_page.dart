@@ -1,117 +1,128 @@
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:doctor_booking_app/core/widgets/app_primary_button.dart';
+import 'package:doctor_booking_app/features/doctor/auth/presentation/bloc/docto_auth_bloc.dart';
 import 'package:doctor_booking_app/features/doctor/home_screen/presentation/pages/doctor_main_wrapper.dart';
-import 'package:doctor_booking_app/features/doctor/registeration/presentation/pages/doctor_registration_page.dart';
 import 'package:flutter/material.dart';
-import '../widgets/doctor_auth_toggle_section.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../widgets/doctor_login_form.dart';
 import '../widgets/doctor_login_header.dart';
 import '../widgets/doctor_social_auth_group.dart';
 
 class DoctorLoginPage extends StatefulWidget {
-  final bool isInitialLogin;
-  const DoctorLoginPage({super.key, this.isInitialLogin = true});
+  const DoctorLoginPage({super.key});
 
   @override
   State<DoctorLoginPage> createState() => _DoctorLoginPageState();
 }
 
 class _DoctorLoginPageState extends State<DoctorLoginPage> {
-  late final ValueNotifier<bool> _isLoginNotifier;
   final _formKey = GlobalKey<FormState>();
-  final _emailFieldKey = GlobalKey<FormFieldState>();
-  final _passwordFieldKey = GlobalKey<FormFieldState>();
+
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _isLoginNotifier = ValueNotifier<bool>(widget.isInitialLogin);
   }
 
   @override
   void dispose() {
-    _isLoginNotifier.dispose();
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
-  void _toggleAuthMode() {
-    _isLoginNotifier.value = !_isLoginNotifier.value;
-  }
+  void _submit() {
+    FocusScope.of(context).unfocus();
 
-  void _signIn() {
-    // For UI demonstration purposes, allow navigation to registration
-    // even if validation fails or directly if it's a sign-up action.
-    if (!_isLoginNotifier.value) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const DoctorRegistrationPage()),
-      );
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
-    if (_formKey.currentState!.validate()) {
-      // In a real app, perform email/password auth here
-      // For now, let's navigate to the dashboard wrapper
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const DoctorMainWrapper()),
-      );
-    }
+    final email = _emailController.text.trim();
+
+    context.read<DoctorAuthBloc>().add(SendMagicLinkEvent(email));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white, // User requested white theme
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 60), // Space for top balance
-                  DoctorLoginHeader(isLoginNotifier: _isLoginNotifier),
-                  const SizedBox(height: 24),
-                  DoctorLoginForm(
-                    emailFieldKey: _emailFieldKey,
-                    emailController: _emailController,
-                    passwordFieldKey: _passwordFieldKey,
-                    passwordController: _passwordController,
-                  ),
-                  const SizedBox(height: 40),
-                  ValueListenableBuilder<bool>(
-                    valueListenable: _isLoginNotifier,
-                    builder: (context, isLogin, child) {
-                      return AppPrimaryButton(
-                        text: isLogin ? 'Sign In' : 'Sign Up',
-                        onPressed: _signIn,
-                        backgroundColor:
-                            AppColors.medConnectPrimary, // Custom for doctor
-                        width: double.infinity,
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  DoctorAuthToggleSection(
-                    isLoginNotifier: _isLoginNotifier,
-                    onToggle: _toggleAuthMode,
-                  ),
-                  const SizedBox(height: 40),
-                  const DoctorSocialAuthGroup(),
-                  const SizedBox(height: 40),
-                ],
+    return BlocConsumer<DoctorAuthBloc, DoctorAuthState>(
+      listener: (context, state) {
+        if (state is MagicLinkSent) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Check your email for login link.")),
+          );
+          
+        }
+        if (state is DoctorAuthenticated) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const DoctorMainWrapper()),
+          );
+        }
+        if (state is DoctorAuthError) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
+        }
+      },
+      builder: (context, state) {
+        final isLoading = state is DoctorAuthLoading;
+
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 60),
+
+                    DoctorLoginHeader(),
+
+                    const SizedBox(height: 24),
+
+                    DoctorLoginForm(
+                      emailController: _emailController,
+                    ),
+
+                    const SizedBox(height: 40),
+
+                    AppPrimaryButton(
+                      text: 'Send Login Link',
+                      width: double.infinity,
+                      backgroundColor: AppColors.medConnectPrimary,
+                      onPressed: isLoading ? null : () => _submit(),
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : null,
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // DoctorAuthToggleSection(
+                    //   isLoginNotifier: _isLoginNotifier,
+                    //   onToggle: () =>
+                    //       _isLoginNotifier.value = !_isLoginNotifier.value,
+                    // ),
+
+                    const SizedBox(height: 40),
+
+                    const DoctorSocialAuthGroup(),
+
+                    const SizedBox(height: 40),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

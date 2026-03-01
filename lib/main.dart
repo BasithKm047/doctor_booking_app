@@ -1,9 +1,13 @@
 import 'package:doctor_booking_app/core/di/injection.dart';
+import 'package:doctor_booking_app/core/service/client.dart';
+import 'package:doctor_booking_app/features/doctor/auth/presentation/bloc/docto_auth_bloc.dart';
+import 'package:doctor_booking_app/features/doctor/doctor_splash/presantation/bloc/doctor_splash_bloc.dart';
 import 'package:doctor_booking_app/features/user/auth/presentation/bloc/auth_bloc.dart';
 import 'package:doctor_booking_app/features/user/splash/presentation/bloc/splash_bloc.dart';
 import 'package:doctor_booking_app/features/user/splash/presentation/pages/splash_screen.dart';
 import "package:flutter/material.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/theme/app_theme.dart';
 import 'dart:developer' as developer;
@@ -14,6 +18,15 @@ void main() async{
     url: 'https://qtsilrnrwxcmnhrxicfc.supabase.co',
     anonKey: 'sb_publishable_WucbG2CxAGFhuy6KOODNRw_tLDWqWO6',
   );
+  supabase.auth.onAuthStateChange.listen((data) async {
+  final event = data.event;
+
+  if (event == AuthChangeEvent.signedIn) {
+    Logger().i("Magic link login success");
+  }
+});
+
+  
 
   developer.log('Supabase initialized successfully', name: 'main',error: null, stackTrace: null,level: 1000,sequenceNumber: null,time: DateTime.now(), zone: null);
 
@@ -31,10 +44,18 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => getit<SplashBloc>(),
+          create: (context) => sl<SplashBloc>(),
         ),
         BlocProvider(
-          create: (context) => getit<AuthBloc>(),
+          create: (context) => sl<AuthBloc>(),
+        ),
+
+        BlocProvider(
+          create: (context) => sl<DoctorAuthBloc>(),
+        ),
+
+         BlocProvider(
+          create: (context) => sl<DoctorSplashBloc>(),
         ),
       ],
       

@@ -6,20 +6,23 @@ class AppPrimaryButton extends StatelessWidget {
 
   final String text;
   final IconData? icon;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final Color? backgroundColor;
   final Color foregroundColor;
   final double height;
   final double borderRadius;
+  final Widget? child;
 
   const AppPrimaryButton({
     this.width = double.infinity,
     super.key,
+
     required this.text,
-    required this.onPressed,
+    this.onPressed,
     this.icon,
     this.backgroundColor,
     this.foregroundColor = Colors.white,
+    this.child,
     this.height = 56.0,
     this.borderRadius = 15,
   });

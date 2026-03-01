@@ -1,5 +1,6 @@
 import 'package:doctor_booking_app/core/service/client.dart';
 import 'package:doctor_booking_app/features/user/auth/data/models/user_model.dart';
+import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRemoteDataSource {
@@ -37,5 +38,10 @@ class AuthRemoteDataSource {
 
   bool isLoggedIn() {
     return supabase.auth.currentUser != null;
+  }
+
+  Future<void> signOut() async {
+    await supabase.auth.signOut();
+    Logger().i("CURRENT USER AFTER LOGOUT: ${supabase.auth.currentUser}");
   }
 }

@@ -1,6 +1,6 @@
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:doctor_booking_app/core/widgets/app_primary_button.dart';
-import 'package:doctor_booking_app/features/doctor/auth/presentation/pages/doctor_login_page.dart';
+import 'package:doctor_booking_app/features/doctor/doctor_splash/presantation/pages/doctor_splash_screen.dart';
 import 'package:doctor_booking_app/features/user/auth/presentation/bloc/auth_bloc.dart';
 import 'package:doctor_booking_app/features/user/home/presentation/pages/main_wrapper.dart';
 import 'package:flutter/material.dart';
@@ -114,7 +114,7 @@ class _LoginPageState extends State<LoginPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const DoctorLoginPage(),
+                                builder: (context) => const DoctorSplashScreen(),
                               ),
                             );
                           },

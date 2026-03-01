@@ -1,22 +1,22 @@
-import 'package:doctor_booking_app/features/user/home/presentation/pages/main_wrapper.dart';
-import 'package:doctor_booking_app/features/user/splash/presentation/bloc/splash_bloc.dart';
+import 'package:doctor_booking_app/features/doctor/auth/presentation/pages/doctor_login_page.dart';
+import 'package:doctor_booking_app/features/doctor/doctor_splash/presantation/bloc/doctor_splash_bloc.dart';
+import 'package:doctor_booking_app/features/doctor/doctor_splash/presantation/widgets/doctor_brand_header.dart';
+import 'package:doctor_booking_app/features/doctor/doctor_splash/presantation/widgets/doctor_brand_logo.dart';
+import 'package:doctor_booking_app/features/doctor/doctor_splash/presantation/widgets/doctor_splash_footer.dart';
+import 'package:doctor_booking_app/features/doctor/home_screen/presentation/pages/doctor_main_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/app_loading_indicator.dart';
-import '../../../start/presentation/pages/start_page.dart';
-import '../widgets/brand_header.dart';
-import '../widgets/brand_logo.dart';
-import '../widgets/splash_footer.dart';
 
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+class DoctorSplashScreen extends StatefulWidget {
+  const DoctorSplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  State<DoctorSplashScreen> createState() => _DoctorSplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _DoctorSplashScreenState extends State<DoctorSplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _progressAnimation;
@@ -24,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    context.read<SplashBloc>().add(CheckAuthEvent());
+    context.read<DoctorSplashBloc>().add(CheckDoctorAuthEvent());
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -50,15 +50,18 @@ class _SplashScreenState extends State<SplashScreen>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return BlocListener<SplashBloc, SplashState>(
-      listener: (context, state) {
-        if (state is UserLoggedIn) {
+    return BlocListener<DoctorSplashBloc, DoctorSplashState>(
+      listener: (context, state) async{
+         await Future.delayed(const Duration(seconds: 2));
+        if (state is DoctorLoggedIn) {
+          // ignore: use_build_context_synchronously
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const MainWrapper()),
+            MaterialPageRoute(builder: (_) => const DoctorMainWrapper()),
           );
-        } else if (state is UserNotLoggedIn) {
+        } else if (state is DoctorNotLoggedIn) {
+          // ignore: use_build_context_synchronously
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const StartPage()),
+            MaterialPageRoute(builder: (_) => const DoctorLoginPage()),
           );
         }
       },
@@ -73,9 +76,9 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const BrandLogo(),
+                    const DoctorBrandLogo(),
                     const SizedBox(height: 32),
-                    const BrandHeader(
+                    const DoctorBrandHeader(
                       title: 'HealthCare',
                       subtitle: 'Your health, our priority.',
                     ),
@@ -93,7 +96,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
               const Align(
                 alignment: Alignment.bottomCenter,
-                child: SplashFooter(),
+                child: DoctorSplashFooter(),
               ),
             ],
           ),

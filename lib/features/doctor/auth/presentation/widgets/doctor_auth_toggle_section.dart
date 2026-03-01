@@ -20,13 +20,13 @@ class DoctorAuthToggleSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              isLogin ? "Not registered as doctor? " : "Already registered? ",
+              isLogin ? "Not registered? " : "Already registered? ",
               style: const TextStyle(color: AppColors.medConnectSubtitle),
             ),
             GestureDetector(
               onTap: onToggle,
               child: Text(
-                isLogin ? 'Register' : 'Login',
+                isLogin ? 'Sign Up' : 'Sign In',
                 style: const TextStyle(
                   color: AppColors.medConnectPrimary, 
                   fontWeight: FontWeight.bold,

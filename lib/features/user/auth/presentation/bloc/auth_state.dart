@@ -36,3 +36,5 @@ final class AuthSignInSuccess extends AuthState {
   @override
   List<Object> get props => [user];
 }
+
+final class AuthSignOutSuccess extends AuthState {}

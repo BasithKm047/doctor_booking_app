@@ -35,3 +35,5 @@ final class AuthSignInEvent extends AuthEvent {
   List<Object> get props => [phoneNumber, otp];
 }
 
+final class AuthSignOutEvent extends AuthEvent {}
+
