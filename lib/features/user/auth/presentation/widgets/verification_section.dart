@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../widgets/otp_input_field.dart';
 
 class VerificationSection extends StatelessWidget {
+  final void Function(String otp) onOtpChanged;
   final ValueNotifier<bool> forceOtpValidationNotifier;
 
   const VerificationSection({
     super.key,
     required this.forceOtpValidationNotifier,
+    required this.onOtpChanged,
   });
 
   @override
@@ -29,7 +31,7 @@ class VerificationSection extends StatelessWidget {
         ValueListenableBuilder<bool>(
           valueListenable: forceOtpValidationNotifier,
           builder: (context, forceValidation, child) {
-            return OtpInputField(forceValidation: forceValidation);
+            return OtpInputField(forceValidation: forceValidation, onOtpChanged: onOtpChanged,);
           },
         ),
         const SizedBox(height: 10),

@@ -1,14 +1,15 @@
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:doctor_booking_app/core/widgets/app_primary_button.dart';
 import 'package:doctor_booking_app/features/doctor/auth/presentation/pages/doctor_login_page.dart';
+import 'package:doctor_booking_app/features/user/auth/presentation/bloc/auth_bloc.dart';
+import 'package:doctor_booking_app/features/user/home/presentation/pages/main_wrapper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../widgets/auth_toggle_section.dart';
 import '../widgets/login_form.dart';
 import '../widgets/login_header.dart';
 import '../widgets/social_auth_group.dart';
 import '../widgets/verification_section.dart';
-
-import 'package:doctor_booking_app/features/user/chat/presentation/pages/chat_page.dart';
 
 class LoginPage extends StatefulWidget {
   final bool isInitialLogin;
@@ -19,6 +20,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  String _enteredOtp = '';
   late final ValueNotifier<bool> _isLoginNotifier;
   final _formKey = GlobalKey<FormState>();
   final _mobileFieldKey = GlobalKey<FormFieldState>();
@@ -42,107 +44,140 @@ class _LoginPageState extends State<LoginPage> {
 
   void _toggleAuthMode() {
     _isLoginNotifier.value = !_isLoginNotifier.value;
+    _forceOtpValidationNotifier.value = false;
+    _formKey.currentState?.reset();
+    _mobileController.clear();
   }
 
   void _sendOtp() {
+    FocusScope.of(context).unfocus();
     if (_mobileFieldKey.currentState!.validate()) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const ChatPage()),
-      );
+      String phone = '+91${_mobileController.text.trim()}';
+      context.read<AuthBloc>().add(SentOtpEvent(phone));
     }
+
+    _forceOtpValidationNotifier.value = false;
   }
 
-  void _signIn() {
+  void _signIn(String otp) {
+    FocusScope.of(context).unfocus();
     _forceOtpValidationNotifier.value = true;
-    if (_formKey.currentState!.validate()) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const ChatPage()),
-        (route) => false,
-      );
+    if (_formKey.currentState!.validate() && _enteredOtp.length == 6) {
+      final phone = '+91${_mobileController.text.trim()}';
+      context.read<AuthBloc>().add(AuthSignInEvent(phone, otp));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.medConnectBackground,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 24),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const DoctorLoginPage(),
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthOtpSent) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('OTP sent successfully!')),
+          );
+        } else if (state is AuthVerified || state is AuthSignInSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Authentication successful!')),
+          );
+
+          // Navigate to home or dashboard
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MainWrapper()),
+          );
+        } else if (state is AuthError) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: ${state.message}')));
+        }
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        backgroundColor: AppColors.medConnectBackground,
+        body: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 24),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const DoctorLoginPage(),
+                              ),
+                            );
+                          },
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(10),
+                              ),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 8,
+                            ),
                           ),
-                        );
-                      },
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 8,
+                          child: Text(
+                            'Register as Doctor',
+                            style: TextStyle(
+                              color: AppColors.medConnectPrimary,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
-                      child: Text(
-                        'Register as Doctor',
-                        style: TextStyle(
-                          color: AppColors.medConnectPrimary,
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      const SizedBox(height: 26), // Push logo more to center
+                      LoginHeader(isLoginNotifier: _isLoginNotifier),
+                      const SizedBox(height: 12),
+                      LoginForm(
+                        mobileFieldKey: _mobileFieldKey,
+                        mobileController: _mobileController,
+                        onSendOtp: _sendOtp,
                       ),
-                    ),
+                      const SizedBox(height: 18),
+                      VerificationSection(
+                        onOtpChanged: (otp) => _enteredOtp = otp,
+
+                        forceOtpValidationNotifier: _forceOtpValidationNotifier,
+                      ),
+                      const SizedBox(height: 18),
+                      ValueListenableBuilder<bool>(
+                        valueListenable: _isLoginNotifier,
+                        builder: (context, isLogin, child) {
+                          return AppPrimaryButton(
+                            text: isLogin ? 'Sign In' : 'Sign Up',
+                            onPressed: () => _signIn(_enteredOtp),
+                            backgroundColor: AppColors.medConnectPrimary,
+                            width: double.infinity,
+                            // height: 50,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      AuthToggleSection(
+                        isLoginNotifier: _isLoginNotifier,
+                        onToggle: _toggleAuthMode,
+                      ),
+                      const SizedBox(height: 20),
+                      const SocialAuthGroup(),
+                      const SizedBox(height: 20),
+                    ],
                   ),
-                  const SizedBox(height: 26), // Push logo more to center
-                  LoginHeader(isLoginNotifier: _isLoginNotifier),
-                  const SizedBox(height: 12),
-                  LoginForm(
-                    mobileFieldKey: _mobileFieldKey,
-                    mobileController: _mobileController,
-                    onSendOtp: _sendOtp,
-                  ),
-                  const SizedBox(height: 18),
-                  VerificationSection(
-                    forceOtpValidationNotifier: _forceOtpValidationNotifier,
-                  ),
-                  const SizedBox(height: 18),
-                  ValueListenableBuilder<bool>(
-                    valueListenable: _isLoginNotifier,
-                    builder: (context, isLogin, child) {
-                      return AppPrimaryButton(
-                        text: isLogin ? 'Sign In' : 'Sign Up',
-                        onPressed: _signIn,
-                        backgroundColor: AppColors.medConnectPrimary,
-                        width: double.infinity,
-                        // height: 50,
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  AuthToggleSection(
-                    isLoginNotifier: _isLoginNotifier,
-                    onToggle: _toggleAuthMode,
-                  ),
-                  const SizedBox(height: 20),
-                  const SocialAuthGroup(),
-                  const SizedBox(height: 20),
-                ],
+                ),
               ),
             ),
           ),

@@ -3,20 +3,27 @@ import 'package:flutter/services.dart';
 
 class OtpInputField extends StatefulWidget {
   final bool forceValidation;
-  const OtpInputField({super.key, this.forceValidation = false});
+  final void Function(String otp) onOtpChanged;
+  const OtpInputField({
+    super.key,
+    this.forceValidation = false,
+    required this.onOtpChanged,
+  });
 
   @override
   State<OtpInputField> createState() => _OtpInputFieldState();
 }
 
 class _OtpInputFieldState extends State<OtpInputField> {
+  late final List<TextEditingController> _controllers;
   late final List<FocusNode> _focusNodes;
   late final List<ValueNotifier<bool>> _wasFocusedNotifiers;
 
   @override
   void initState() {
     super.initState();
-    _focusNodes = List.generate(6, (index) => FocusNode());
+    _controllers = List.generate(6, (_) => TextEditingController());
+    _focusNodes = List.generate(6, (_) => FocusNode());
     _wasFocusedNotifiers = List.generate(
       6,
       (index) => ValueNotifier<bool>(false),
@@ -55,6 +62,7 @@ class _OtpInputFieldState extends State<OtpInputField> {
             valueListenable: _wasFocusedNotifiers[index],
             builder: (context, wasFocused, child) {
               return TextFormField(
+                controller: _controllers[index],
                 focusNode: _focusNodes[index],
                 onChanged: (value) {
                   if (value.length == 1 && index < 5) {
@@ -63,6 +71,8 @@ class _OtpInputFieldState extends State<OtpInputField> {
                   if (value.isEmpty && index > 0) {
                     FocusScope.of(context).requestFocus(_focusNodes[index - 1]);
                   }
+                  final otp = _controllers.map((c) => c.text).join();
+                  widget.onOtpChanged(otp);
                 },
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(

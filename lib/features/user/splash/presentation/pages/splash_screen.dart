@@ -1,4 +1,8 @@
+import 'package:doctor_booking_app/features/user/home/presentation/pages/home_screen.dart';
+import 'package:doctor_booking_app/features/user/home/presentation/pages/main_wrapper.dart';
+import 'package:doctor_booking_app/features/user/splash/presentation/bloc/splash_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/app_loading_indicator.dart';
 import '../../../start/presentation/pages/start_page.dart';
@@ -21,6 +25,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
+    context.read<SplashBloc>().add(CheckAuthEvent());
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -31,13 +36,8 @@ class _SplashScreenState extends State<SplashScreen>
       end: 1.0,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.linear));
 
-    _controller.forward().then((_) {
-      if (mounted) {
-        Navigator.of(
-          context,
-        ).pushReplacement(MaterialPageRoute(builder: (_) => const StartPage()));
-      }
-    });
+    
+    _controller.forward();
   }
 
   @override
@@ -51,40 +51,53 @@ class _SplashScreenState extends State<SplashScreen>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : AppColors.lightBackground,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const BrandLogo(),
-                  const SizedBox(height: 32),
-                  const BrandHeader(
-                    title: 'HealthCare',
-                    subtitle: 'Your health, our priority.',
-                  ),
-                  const SizedBox(height: 48),
-                  AnimatedBuilder(
-                    animation: _progressAnimation,
-                    builder: (context, _) {
-                      return AppLoadingIndicator(
-                        progress: _progressAnimation.value,
-                      );
-                    },
-                  ),
-                ],
+    return BlocListener<SplashBloc, SplashState>(
+      listener: (context, state) {
+        if (state is UserLoggedIn) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const MainWrapper()),
+          );
+        } else if (state is UserNotLoggedIn) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const StartPage()),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: isDark
+            ? AppColors.darkBackground
+            : AppColors.lightBackground,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const BrandLogo(),
+                    const SizedBox(height: 32),
+                    const BrandHeader(
+                      title: 'HealthCare',
+                      subtitle: 'Your health, our priority.',
+                    ),
+                    const SizedBox(height: 48),
+                    AnimatedBuilder(
+                      animation: _progressAnimation,
+                      builder: (context, _) {
+                        return AppLoadingIndicator(
+                          progress: _progressAnimation.value,
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const Align(
-              alignment: Alignment.bottomCenter,
-              child: SplashFooter(),
-            ),
-          ],
+              const Align(
+                alignment: Alignment.bottomCenter,
+                child: SplashFooter(),
+              ),
+            ],
+          ),
         ),
       ),
     );
