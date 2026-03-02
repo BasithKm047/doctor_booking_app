@@ -80,7 +80,7 @@ class _DoctorRegistrationPageState extends State<DoctorRegistrationPage> {
         SnackBar(
           padding: const EdgeInsets.all(8),
           content: const Text(
-            'Registration Successful! (Mock)',
+            'Registration Successful! Welcome to MedConnect.',
             style: TextStyle(color: Colors.white),
           ),
           backgroundColor: AppColors.medConnectPrimary,

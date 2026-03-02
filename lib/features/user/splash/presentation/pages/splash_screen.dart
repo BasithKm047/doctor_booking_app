@@ -1,3 +1,4 @@
+import 'package:doctor_booking_app/features/doctor/home_screen/presentation/pages/doctor_main_wrapper.dart';
 import 'package:doctor_booking_app/features/user/home/presentation/pages/main_wrapper.dart';
 import 'package:doctor_booking_app/features/user/splash/presentation/bloc/splash_bloc.dart';
 import 'package:flutter/material.dart';
@@ -52,11 +53,16 @@ class _SplashScreenState extends State<SplashScreen>
 
     return BlocListener<SplashBloc, SplashState>(
       listener: (context, state) {
-        if (state is UserLoggedIn) {
+
+        if (state is AuthenticatedAsDoctor) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const DoctorMainWrapper()),
+          );
+        } else if (state is AuthenticatedAsUser) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const MainWrapper()),
           );
-        } else if (state is UserNotLoggedIn) {
+        }else if (state is NotAuthenticated){
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const StartPage()),
           );

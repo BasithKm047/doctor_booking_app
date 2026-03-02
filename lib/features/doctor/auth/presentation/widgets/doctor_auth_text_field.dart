@@ -15,8 +15,10 @@ class AuthTextField extends StatelessWidget {
 
   final bool isPassword;
   final Widget? suffixIcon;
+  final bool? obscureText;
 
   const AuthTextField({
+    this.obscureText,
     super.key,
     required this.label,
     required this.hintText,
@@ -50,7 +52,7 @@ class AuthTextField extends StatelessWidget {
           keyboardType: keyboardType,
           validator: validator,
           onSaved: onSaved,
-          obscureText: isPassword,
+          obscureText: obscureText ?? isPassword,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           decoration: InputDecoration(
             hintText: hintText,

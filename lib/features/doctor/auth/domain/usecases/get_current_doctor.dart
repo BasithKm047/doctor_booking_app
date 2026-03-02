@@ -4,9 +4,9 @@ import 'package:doctor_booking_app/features/doctor/auth/domain/repositories/doct
 class GetCurrentDoctor {
   final DoctorAuthRepository repository;
 
-  GetCurrentDoctor(this.repository);
+  const GetCurrentDoctor(this.repository);
 
   Future<DoctorEntity?> call() {
-    return repository.getCurrentUser();
+    return repository.getCurrentDoctor();
   }
 }

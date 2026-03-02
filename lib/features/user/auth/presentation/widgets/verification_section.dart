@@ -4,11 +4,9 @@ import '../widgets/otp_input_field.dart';
 
 class VerificationSection extends StatelessWidget {
   final void Function(String otp) onOtpChanged;
-  final ValueNotifier<bool> forceOtpValidationNotifier;
 
   const VerificationSection({
     super.key,
-    required this.forceOtpValidationNotifier,
     required this.onOtpChanged,
   });
 
@@ -28,12 +26,7 @@ class VerificationSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        ValueListenableBuilder<bool>(
-          valueListenable: forceOtpValidationNotifier,
-          builder: (context, forceValidation, child) {
-            return OtpInputField(forceValidation: forceValidation, onOtpChanged: onOtpChanged,);
-          },
-        ),
+        OtpInputField( onOtpChanged: onOtpChanged,),
         const SizedBox(height: 10),
         Align(
           alignment: Alignment.centerRight,

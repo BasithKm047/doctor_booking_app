@@ -1,3 +1,4 @@
+import 'package:doctor_booking_app/core/service/app_logger.dart';
 import 'package:doctor_booking_app/core/service/client.dart';
 import 'package:doctor_booking_app/features/doctor/auth/data/data_source/doctor_auth_remote_data_source.dart';
 import 'package:doctor_booking_app/features/doctor/auth/domain/entities/doctor_entity.dart';
@@ -8,23 +9,36 @@ class DoctorAuthRepositoryImpl implements DoctorAuthRepository {
 
   DoctorAuthRepositoryImpl(this.remote);
 
- 
   @override
-  Future<void> sendMagicLink(String email) {
-    return remote.sendMagicLink(email);
+  Future<void> login(String email, String password) {
+    AppLogger.info('Repository: Logging in doctor $email');
+    return remote.login(email, password);
   }
 
   @override
-  Future<DoctorEntity?> getCurrentUser() {
+  Future<void> signUp(String email, String password) {
+    AppLogger.info('Repository: Signing up doctor $email');
+    return remote.signUp(email, password);
+  }
+
+  @override
+  Future<DoctorEntity?> getCurrentDoctor() {
+    AppLogger.info('Repository: Getting current doctor profile');
     return remote.getCurrentUserProfile();
   }
+
   @override
   Future<void> signOut() {
+    AppLogger.info('Repository: Signing out');
     return remote.signOut();
   }
 
-@override
-Future<bool> isLoggedIn() async {
-  return supabase.auth.currentUser != null;
-}
+  @override
+  Future<bool> isLoggedIn() async {
+    final status = supabase.auth.currentUser != null;
+    AppLogger.debug(
+      'Repository: Check auth status: ${status ? "Logged In" : "Not Logged In"}',
+    );
+    return status;
+  }
 }

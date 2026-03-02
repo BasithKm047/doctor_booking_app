@@ -82,6 +82,7 @@ class Step1PersonalDetails extends StatelessWidget {
         // const Text('Full Name', style: TextStyle(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         AuthTextField(
+          obscureText: false,
           controller: nameController,
           label: 'Full Name',
           hintText: 'e.g. Dr. Jane Smith',

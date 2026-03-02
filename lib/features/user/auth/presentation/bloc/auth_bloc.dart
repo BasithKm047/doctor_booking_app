@@ -13,15 +13,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SendOtp sendOtp;
   final VerifyOtp verifyOtp;
   final Signout signOut;
-  
+
   AuthBloc(this.sendOtp, this.verifyOtp, this.signOut) : super(AuthInitial()) {
     on<SentOtpEvent>((event, emit) async {
       emit(AuthLoading());
       try {
         await sendOtp(event.phoneNumber);
         emit(AuthOtpSent());
-          Logger().i('OTP sent to ${event.phoneNumber}');
-      } catch (e,strackTrace) {
+        Logger().i('OTP sent to ${event.phoneNumber}');
+      } catch (e, strackTrace) {
         Logger().e('Error sending OTP: $e', stackTrace: strackTrace);
         emit(AuthError(e.toString()));
       }
@@ -36,15 +36,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     });
 
-    on<AuthSignInEvent>((event, emit) async {
-      emit(AuthLoading());
-      try {
-        final user = await verifyOtp(event.phoneNumber, event.otp);
-        emit(AuthSignInSuccess(user));
-      } catch (e) {
-        emit(AuthError(e.toString()));
-      }
-    });
     on<AuthSignOutEvent>((event, emit) async {
       emit(AuthLoading());
       try {

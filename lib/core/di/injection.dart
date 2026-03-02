@@ -2,10 +2,11 @@ import 'package:doctor_booking_app/features/doctor/auth/data/data_source/doctor_
 import 'package:doctor_booking_app/features/doctor/auth/data/repositories/doctor_auth_repository_impl.dart';
 import 'package:doctor_booking_app/features/doctor/auth/domain/repositories/doctor_auth_repository.dart';
 import 'package:doctor_booking_app/features/doctor/auth/domain/usecases/doctor_is_loggedin.dart';
+import 'package:doctor_booking_app/features/doctor/auth/domain/usecases/doctor_login.dart';
+import 'package:doctor_booking_app/features/doctor/auth/domain/usecases/doctor_signup.dart';
 import 'package:doctor_booking_app/features/doctor/auth/domain/usecases/doctor_signout.dart';
 import 'package:doctor_booking_app/features/doctor/auth/domain/usecases/get_current_doctor.dart';
-import 'package:doctor_booking_app/features/doctor/auth/domain/usecases/send_magic_link.dart';
-import 'package:doctor_booking_app/features/doctor/auth/presentation/bloc/docto_auth_bloc.dart';
+import 'package:doctor_booking_app/features/doctor/auth/presentation/bloc/doctor_auth_bloc.dart';
 import 'package:doctor_booking_app/features/doctor/doctor_splash/presantation/bloc/doctor_splash_bloc.dart';
 import 'package:doctor_booking_app/features/user/auth/data/data_source/auth_remote_data_source.dart';
 import 'package:doctor_booking_app/features/user/auth/data/repositories/auth_repository_impl.dart';
@@ -37,6 +38,7 @@ Future<void> _initUser() async {
   sl.registerFactory(() => AuthBloc(sl(), sl(), sl()));
   sl.registerFactory(() => SplashBloc(sl()));
 }
+
 Future<void> _initDoctor() async {
   // Data Source
   sl.registerLazySingleton<DoctorAuthRemoteDataSource>(
@@ -49,7 +51,8 @@ Future<void> _initDoctor() async {
   );
 
   // Usecases
-  sl.registerLazySingleton(() => SendMagicLink(sl()));
+  sl.registerLazySingleton(() => DoctorLogin(sl()));
+  sl.registerLazySingleton(() => DoctorSignUp(sl()));
   sl.registerLazySingleton(() => GetCurrentDoctor(sl()));
   sl.registerLazySingleton(() => DoctorSignOut(sl()));
   sl.registerLazySingleton(() => DoctorIsLoggedIn(sl()));
@@ -57,15 +60,12 @@ Future<void> _initDoctor() async {
   // Bloc
   sl.registerFactory(
     () => DoctorAuthBloc(
-      sl<SendMagicLink>(),
+      sl<DoctorLogin>(),
+      sl<DoctorSignUp>(),
       sl<GetCurrentDoctor>(),
       sl<DoctorSignOut>(),
     ),
   );
 
-  sl.registerFactory(
-    () => DoctorSplashBloc(
-      sl<DoctorIsLoggedIn>(),
-    ),
-  );
+  sl.registerFactory(() => DoctorSplashBloc(sl<DoctorIsLoggedIn>()));
 }

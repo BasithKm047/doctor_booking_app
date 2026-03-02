@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../splash/presentation/widgets/brand_logo.dart';
 
 class LoginHeader extends StatelessWidget {
-  final ValueNotifier<bool> isLoginNotifier;
 
-  const LoginHeader({super.key, required this.isLoginNotifier});
+  const LoginHeader({super.key, });
 
   @override
   Widget build(BuildContext context) {
@@ -13,33 +12,26 @@ class LoginHeader extends StatelessWidget {
       children: [
         const BrandLogo(size: 120),
         const SizedBox(height: 24),
-        ValueListenableBuilder<bool>(
-          valueListenable: isLoginNotifier,
-          builder: (context, isLogin, child) {
-            return Column(
-              children: [
-                Text(
-                  isLogin ? 'Welcome Back' : 'Create Account',
-                  style: const TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.medConnectTitle,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  isLogin
-                      ? 'Enter your details to access your health dashboard'
-                      : 'Join MedConnect to access world-class healthcare',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.medConnectSubtitle,
-                  ),
-                ),
-              ],
-            );
-          },
+        Column(
+          children: [
+            Text(
+            'Login to MedConnect',
+              style: const TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                color: AppColors.medConnectTitle,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+             'Access your personalized health dashboard',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.medConnectSubtitle,
+              ),
+            ),
+          ],
         ),
       ],
     );
