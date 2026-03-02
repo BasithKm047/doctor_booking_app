@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../../domain/models/doctor.dart';
+import '../../domain/entities/user_doctor_entity.dart';
 import '../pages/doctor_details_screen.dart';
 
 class DoctorCard extends StatelessWidget {
-  final Doctor doctor;
+  final UserDoctorEntity doctor;
   final bool isDark;
 
   const DoctorCard({super.key, required this.doctor, this.isDark = false});
@@ -28,16 +28,27 @@ class DoctorCard extends StatelessWidget {
         children: [
           // Doctor Image - Placed on the right
           Positioned(
-            right: -5,
-            bottom: 70, // Adjusted to sit at the bottom or slightly offset
-            child: Image.asset(
-              doctor.imagePath,
-              height: 180,
-              width: 180,
-              fit: BoxFit.contain,
-            ),
+            right: 0,
+            bottom: 60,
+            child:
+                doctor.profileImage != null && doctor.profileImage!.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.network(
+                      doctor.profileImage!,
+                      height: 170,
+                      width: 160,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.person,
+                        size: 160,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  )
+                : const Icon(Icons.person, size: 150, color: Colors.grey),
           ),
-    
+
           // Content
           Padding(
             padding: const EdgeInsets.all(24.0),
@@ -57,7 +68,7 @@ class DoctorCard extends StatelessWidget {
                     const SizedBox(width: 12),
                     _buildBadge(
                       Icons.monetization_on,
-                      "\$${doctor.fee.toInt()}/hr",
+                      "\$${doctor.consultationFee.toInt()}/hr",
                       isDark ? Colors.white : const Color(0xFF1E293B),
                       const Color(0xFF22C55E),
                       isDark,
@@ -65,7 +76,7 @@ class DoctorCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-    
+
                 // Doctor Name & Specialty
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.45,
@@ -80,7 +91,7 @@ class DoctorCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  doctor.specialty,
+                  doctor.specialization,
                   style: TextStyle(
                     fontSize: 16,
                     color: subTextColor,
@@ -88,7 +99,7 @@ class DoctorCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-    
+
                 // Book Now Button
                 ElevatedButton(
                   onPressed: () {
@@ -118,10 +129,7 @@ class DoctorCard extends StatelessWidget {
                   ),
                   child: const Text(
                     'Book Now',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                   ),
                 ),
               ],

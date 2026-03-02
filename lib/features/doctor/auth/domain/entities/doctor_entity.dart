@@ -1,9 +1,9 @@
-class DoctorEntity {
+class DoctorAuthEntity {
     final String id;
     final String email;
     final String role;
   
-    DoctorEntity({
+    DoctorAuthEntity({
       required this.id,
       required this.email,
       required this.role,

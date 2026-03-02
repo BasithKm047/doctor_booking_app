@@ -1,22 +1,23 @@
 import 'package:bloc/bloc.dart';
-import 'package:doctor_booking_app/features/user/chat/data/disease_data.dart';
+import 'package:doctor_booking_app/features/user/chat/data/disease_data.dart'
+    as disease_data;
 import 'package:doctor_booking_app/features/user/chat/data/recomendation_engine.dart';
 import 'package:doctor_booking_app/features/user/chat/domain/models/chat_message.dart';
-import 'package:doctor_booking_app/features/user/home/data/doctor_data.dart'
-    as doc_data;
-import 'package:doctor_booking_app/features/user/home/domain/models/doctor.dart';
+import 'package:doctor_booking_app/features/user/home/domain/entities/user_doctor_entity.dart';
+import 'package:doctor_booking_app/features/user/home/domain/usecases/get_user_doctors.dart';
 
 import 'chat_event.dart';
 import 'chat_state.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
+  final GetUserDoctors getUserDoctors;
   String? name;
   String? age;
   String? sex;
   String? complaint;
-  List<String> symptoms = [];
+  List<String> symptomsList = [];
 
-  ChatBloc()
+  ChatBloc({required this.getUserDoctors})
     : super(
         ChatState(
           messages: [
@@ -30,6 +31,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         ),
       ) {
     on<UserMessageSent>(_handleMessage);
+    on<StartChat>(_resetChat);
   }
 
   static String _currentTime() {
@@ -40,6 +42,26 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     final minute = now.minute.toString().padLeft(2, '0');
     final period = now.hour >= 12 ? 'PM' : 'AM';
     return "$hour:$minute $period";
+  }
+
+  void _resetChat(StartChat event, Emitter<ChatState> emit) {
+    name = null;
+    age = null;
+    sex = null;
+    complaint = null;
+    symptomsList = [];
+    emit(
+      ChatState(
+        messages: [
+          ChatMessage(
+            text: "Hi! I am your Health Assistant. What is your name?",
+            time: _currentTime(),
+            isMe: false,
+          ),
+        ],
+        currentStep: "ask_name",
+      ),
+    );
   }
 
   Future<void> _handleMessage(
@@ -58,6 +80,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
     String aiResponse = "";
     String nextStep = state.currentStep;
+    UserDoctorEntity? selectedDoctor;
 
     switch (state.currentStep) {
       case "ask_name":
@@ -85,92 +108,81 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         break;
 
       case "ask_symptoms":
-        symptoms = userInput.split(",").map((e) => e.trim()).toList();
+        symptomsList = userInput.split(",").map((e) => e.trim()).toList();
 
         final disease = RecommendationEngine.matchDisease(
           complaint!,
-          symptoms,
-          diseases,
+          symptomsList,
+          disease_data.diseases,
         );
-
-        Doctor? selectedDoctor;
 
         if (disease != null) {
           aiResponse =
-              "Based on your symptoms, you might have ${disease.name}. I recommend consulting a ${disease.doctorType}.";
+              "Based on your symptoms, I recommend seeing a ${disease.doctorType}.";
 
-          updatedMessages.add(
-            ChatMessage(text: aiResponse, time: _currentTime(), isMe: false),
-          );
+          // Fetch real doctors from repository
+          final doctors = await getUserDoctors();
+          UserDoctorEntity? matchedDoc;
 
-          // Find a matching doctor
-          selectedDoctor = doc_data.doctors.firstWhere(
-            (doc) => doc.specialty == disease.doctorType,
-            orElse: () => doc_data.doctors.firstWhere(
-              (doc) => doc.specialty == "General Physician",
-            ),
-          );
+          if (doctors.isNotEmpty) {
+            // Try to find matching specialty
+            try {
+              matchedDoc = doctors.firstWhere(
+                (doc) => doc.specialization.toLowerCase().contains(
+                  disease.doctorType.toLowerCase(),
+                ),
+              );
+            } catch (_) {
+              // Fallback to General Physician or first available
+              try {
+                matchedDoc = doctors.firstWhere(
+                  (doc) => doc.specialization.toLowerCase().contains('general'),
+                );
+              } catch (_) {
+                matchedDoc = doctors.first;
+              }
+            }
+          }
 
-          updatedMessages.add(
-            ChatMessage(
-              text: "Here is a recommended doctor for you:",
-              time: _currentTime(),
-              isMe: false,
-              type: MessageType.recommendation,
-              recommendedDoctor: selectedDoctor,
-            ),
-          );
-
-          aiResponse = ""; // Clear so we don't add another text message below
+          selectedDoctor = matchedDoc;
         } else {
-          // Fallback logic
           aiResponse =
-              "I couldn't identify a specific condition based on those symptoms. I recommend consulting a General Physician for a thorough check-up.";
+              "I'm not entirely sure, but a General Physician can help with an initial diagnosis.";
 
-          updatedMessages.add(
-            ChatMessage(text: aiResponse, time: _currentTime(), isMe: false),
-          );
+          final doctors = await getUserDoctors();
+          UserDoctorEntity? fallbackDoc;
 
-          // Always pick General Physician for fallback
-          selectedDoctor = doc_data.doctors.firstWhere(
-            (doc) => doc.specialty == "General Physician",
-            orElse: () => doc_data.doctors.first,
-          );
-
-          updatedMessages.add(
-            ChatMessage(
-              text: "I suggest you see this General Physician:",
-              time: _currentTime(),
-              isMe: false,
-              type: MessageType.recommendation,
-              recommendedDoctor: selectedDoctor,
-            ),
-          );
-
-          aiResponse = "";
+          if (doctors.isNotEmpty) {
+            try {
+              fallbackDoc = doctors.firstWhere(
+                (doc) => doc.specialization.toLowerCase().contains('general'),
+              );
+            } catch (_) {
+              fallbackDoc = doctors.first;
+            }
+          }
+          selectedDoctor = fallbackDoc;
         }
         nextStep = "completed";
-
-        // Emit recommendation to trigger navigation
-        emit(
-          state.copyWith(
-            messages: updatedMessages,
-            currentStep: nextStep,
-            isTyping: false,
-            recommendedDoctor: selectedDoctor,
-          ),
-        );
-        return;
+        break;
 
       case "completed":
         aiResponse =
-            "I've already provided a recommendation. Is there anything else you'd like to ask about?";
+            "I've already provided a recommendation. Feel free to restart chat if you have more concerns.";
         break;
     }
 
     if (aiResponse.isNotEmpty) {
       updatedMessages.add(
-        ChatMessage(text: aiResponse, time: _currentTime(), isMe: false),
+        ChatMessage(
+          text: aiResponse,
+          time: _currentTime(),
+          isMe: false,
+          type: selectedDoctor != null
+              ? MessageType.recommendation
+              : MessageType.text,
+          recommendedDoctor: selectedDoctor,
+        ),
       );
     }
 
@@ -179,6 +191,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         messages: updatedMessages,
         currentStep: nextStep,
         isTyping: false,
+        recommendedDoctor: selectedDoctor,
       ),
     );
   }

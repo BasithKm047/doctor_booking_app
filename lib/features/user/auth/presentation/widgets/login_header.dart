@@ -1,6 +1,6 @@
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
-import '../../../splash/presentation/widgets/brand_logo.dart';
+import '../../../../../core/splash/presentation/widgets/brand_logo.dart';
 
 class LoginHeader extends StatelessWidget {
 

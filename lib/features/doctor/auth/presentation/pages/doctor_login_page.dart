@@ -1,5 +1,7 @@
+import 'package:doctor_booking_app/core/widgets/custom_snack_bar.dart';
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:doctor_booking_app/core/widgets/app_primary_button.dart';
+import 'package:doctor_booking_app/features/doctor/home_screen/presentation/pages/doctor_main_wrapper.dart';
 import 'package:doctor_booking_app/features/doctor/auth/presentation/bloc/doctor_auth_bloc.dart';
 import 'package:doctor_booking_app/features/doctor/registeration/presentation/pages/doctor_registration_page.dart';
 import 'package:flutter/material.dart';
@@ -48,24 +50,24 @@ class _DoctorLoginPageState extends State<DoctorLoginPage> {
     return BlocConsumer<DoctorAuthBloc, DoctorAuthState>(
       listener: (context, state) {
         if (state is DoctorAuthLoading) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                isSignUp ? "Creating account..." : "Checking login status...",
-              ),
-            ),
+          CustomSnackBar.show(
+            context,
+            isSignUp ? "Creating account..." : "Checking login status...",
           );
         }
 
         if (state is DoctorAuthenticated) {
           Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const DoctorMainWrapper()),
+          );
+        }
+        if (state is DoctorAuthNewUser) {
+          Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const DoctorRegistrationPage()),
           );
         }
         if (state is DoctorAuthError) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+          CustomSnackBar.show(context, state.message, isError: true);
         }
       },
       builder: (context, state) {

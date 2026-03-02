@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../../domain/models/doctor.dart';
+import '../../domain/entities/user_doctor_entity.dart';
 import '../pages/doctor_details_screen.dart';
 
 class DoctorBookingCard extends StatelessWidget {
-  final Doctor doctor;
+  final UserDoctorEntity doctor;
   const DoctorBookingCard({super.key, required this.doctor});
 
   @override
@@ -31,82 +31,101 @@ class DoctorBookingCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
+            Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.asset(
-                    doctor.imagePath,
-                    height: 64,
-                    width: 64,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    height: 16,
-                    width: 16,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF22C55E),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child:
+                          doctor.profileImage != null &&
+                              doctor.profileImage!.isNotEmpty
+                          ? Image.network(
+                              doctor.profileImage!,
+                              height: 56,
+                              width: 56,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.person,
+                                    size: 56,
+                                    color: Colors.grey,
+                                  ),
+                            )
+                          : const Icon(
+                              Icons.person,
+                              size: 56,
+                              color: Colors.grey,
+                            ),
                     ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        height: 16,
+                        width: 16,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF22C55E),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        doctor.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.medConnectPrimary,
+                        ),
+                      ),
+                      Text(
+                        '${doctor.specialization} • ${doctor.hospital}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors
+                              .medConnectPrimary, // Changed from Color(0xFF94A3B8)
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.star, color: Colors.amber, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            doctor.rating.toString(),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '(${doctor.reviews} reviews)',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF94A3B8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    doctor.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.medConnectPrimary,
-                    ),
-                  ),
-                  Text(
-                    doctor.specialty.toUpperCase(),
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors
-                          .medConnectPrimary, // Changed from Color(0xFF94A3B8)
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        doctor.rating.toString(),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '(${doctor.reviews} reviews)',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF94A3B8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            const Spacer(),
             SizedBox(
-              width: 80,
+              width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
@@ -118,9 +137,12 @@ class DoctorBookingCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'Book',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                child: Text(
+                  'Book Appointment \$${doctor.consultationFee.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ),

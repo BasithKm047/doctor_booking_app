@@ -1,12 +1,12 @@
-import 'dart:developer';
-
-import 'package:doctor_booking_app/features/user/home/data/doctor_data.dart' as doc_data;
-import 'package:doctor_booking_app/features/user/home/presentation/pages/medical_categories_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../../domain/models/doctor.dart';
 import '../../domain/models/medical_category.dart';
+import '../../domain/entities/user_doctor_entity.dart';
+import '../bloc/user_home_bloc.dart';
+import '../bloc/user_home_state.dart';
 import 'all_doctors_screen.dart';
+import 'medical_categories_screen.dart';
 import '../widgets/category_icon.dart';
 import '../widgets/doctor_card.dart';
 import '../widgets/home_app_bar.dart';
@@ -49,8 +49,6 @@ class HomeScreen extends StatelessWidget {
       ),
     ];
 
-    final doctors = doc_data.doctors;
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const HomeAppBar(),
@@ -73,24 +71,37 @@ class HomeScreen extends StatelessWidget {
             },
           ),
           const SizedBox(height: 20),
+          const SizedBox(height: 20),
           _buildCategoryGrid(medicalCategories),
           const SizedBox(height: 32),
           _buildSectionHeader(
             'Recommended Doctors',
             'View All',
             onAction: () {
-              log('Navigating to AllDoctorsScreen');
+              final bloc = context.read<UserHomeBloc>();
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const AllDoctorsScreen(),
-      
+                  builder: (_) => BlocProvider.value(
+                    value: bloc,
+                    child: const AllDoctorsScreen(),
+                  ),
                 ),
               );
-              log('AllDoctorsScreen');
             },
           ),
           const SizedBox(height: 20),
-          _buildDoctorList(doctors),
+          BlocBuilder<UserHomeBloc, UserHomeState>(
+            builder: (context, state) {
+              if (state is UserHomeLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is UserHomeLoaded) {
+                return _buildDoctorList(state.doctors);
+              } else if (state is UserHomeError) {
+                return Center(child: Text('Error: ${state.message}'));
+              }
+              return const SizedBox.shrink();
+            },
+          ),
           const SizedBox(height: 24),
         ],
       ),
@@ -237,7 +248,10 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDoctorList(List<Doctor> doctors) {
+  Widget _buildDoctorList(List<UserDoctorEntity> doctors) {
+    if (doctors.isEmpty) {
+      return const Center(child: Text('No doctors available'));
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: ListView.builder(

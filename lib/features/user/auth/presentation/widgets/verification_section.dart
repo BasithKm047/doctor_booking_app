@@ -5,18 +5,16 @@ import '../widgets/otp_input_field.dart';
 class VerificationSection extends StatelessWidget {
   final void Function(String otp) onOtpChanged;
 
-  const VerificationSection({
-    super.key,
-    required this.onOtpChanged,
-  });
+  const VerificationSection({super.key, required this.onOtpChanged});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const SizedBox(height: 12),
         _buildDivider('VERIFICATION CODE'),
-        const SizedBox(height: 40),
+        const SizedBox(height: 24),
         const Text(
           'Enter 6-digit OTP',
           style: TextStyle(
@@ -26,21 +24,7 @@ class VerificationSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        OtpInputField( onOtpChanged: onOtpChanged,),
-        const SizedBox(height: 10),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: () {},
-            child: const Text(
-              'Resend Code',
-              style: TextStyle(
-                color: Color(0xFF1D4ED8),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
+        OtpInputField(onOtpChanged: onOtpChanged),
       ],
     );
   }

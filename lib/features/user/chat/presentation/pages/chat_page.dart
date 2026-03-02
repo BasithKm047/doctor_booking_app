@@ -1,3 +1,4 @@
+import 'package:doctor_booking_app/core/di/injection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../widgets/chat_app_bar.dart';
@@ -39,7 +40,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ChatBloc(),
+      create: (context) => sl<ChatBloc>(),
       child: Scaffold(
         backgroundColor: const Color(0xFFF8FAFC),
         appBar: ChatAppBar(onBack: () => Navigator.pop(context)),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../domain/models/doctor.dart';
+import '../../domain/entities/user_doctor_entity.dart';
 
 class DoctorDetailsHeader extends StatelessWidget {
-  final Doctor doctor;
+  final UserDoctorEntity doctor;
 
   const DoctorDetailsHeader({super.key, required this.doctor});
 
@@ -16,13 +16,23 @@ class DoctorDetailsHeader extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child: Image.asset(
-                  doctor.imagePath,
-                  height: 140,
-                  width: 140,
-                  fit: BoxFit.contain,
-                ),
+                borderRadius: BorderRadius.circular(14),
+                child:
+                    doctor.profileImage != null &&
+                        doctor.profileImage!.isNotEmpty
+                    ? Image.network(
+                        doctor.profileImage!,
+                        height: 120,
+                        width: 120,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.person,
+                              size: 120,
+                              color: Colors.grey,
+                            ),
+                      )
+                    : const Icon(Icons.person, size: 120, color: Colors.grey),
               ),
             ),
             Positioned(
@@ -51,7 +61,7 @@ class DoctorDetailsHeader extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          doctor.specialty,
+          doctor.specialization,
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -79,7 +89,7 @@ class DoctorDetailsHeader extends StatelessWidget {
               child: _buildInfoCard(
                 Icons.payments_outlined,
                 'FEE',
-                '\$${doctor.fee.toInt()}/hr',
+                '\$${doctor.consultationFee.toInt()}/hr',
                 const Color(0xFF1E5BB1),
               ),
             ),

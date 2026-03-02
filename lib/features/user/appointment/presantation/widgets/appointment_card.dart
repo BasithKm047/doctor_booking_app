@@ -21,7 +21,7 @@ class AppointmentCard extends StatelessWidget {
           Row(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(14),
                 child: Image.asset(
                   appointment.imagePath,
                   height: 100,

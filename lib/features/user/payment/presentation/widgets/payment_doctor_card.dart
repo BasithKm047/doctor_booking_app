@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../home/domain/models/doctor.dart';
+import '../../../home/domain/entities/user_doctor_entity.dart';
 
 class PaymentDoctorCard extends StatelessWidget {
-  final Doctor doctor;
+  final UserDoctorEntity doctor;
 
   const PaymentDoctorCard({super.key, required this.doctor});
 
@@ -41,7 +41,7 @@ class PaymentDoctorCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${doctor.specialty} • ${doctor.hospital}',
+                  '${doctor.specialization} • ${doctor.hospital} • ${doctor.experience} Years Exp.',
                   style: const TextStyle(
                     fontSize: 14,
                     color: Color(0xFF64748B),
@@ -75,13 +75,29 @@ class PaymentDoctorCard extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Image.asset(
-              doctor.imagePath,
-              height: 100,
-              width: 80,
-              fit: BoxFit.cover,
-            ),
+            borderRadius: BorderRadius.circular(14),
+            child:
+                (doctor.profileImage != null &&
+                    doctor.profileImage!.isNotEmpty &&
+                    doctor.profileImage!.startsWith('http'))
+                ? Image.network(
+                    doctor.profileImage!,
+                    height: 90,
+                    width: 72,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 90,
+                      width: 72,
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.person, color: Colors.grey),
+                    ),
+                  )
+                : Image.asset(
+                    'assets/images/doctor_image_1.png',
+                    height: 90,
+                    width: 72,
+                    fit: BoxFit.cover,
+                  ),
           ),
         ],
       ),

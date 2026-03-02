@@ -1,11 +1,12 @@
 import 'package:doctor_booking_app/features/doctor/home_screen/presentation/pages/doctor_main_wrapper.dart';
+import 'package:doctor_booking_app/features/doctor/registeration/presentation/pages/doctor_registration_page.dart';
 import 'package:doctor_booking_app/features/user/home/presentation/pages/main_wrapper.dart';
-import 'package:doctor_booking_app/features/user/splash/presentation/bloc/splash_bloc.dart';
+import 'package:doctor_booking_app/core/splash/presentation/bloc/splash_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../../core/theme/app_colors.dart';
-import '../../../../../core/widgets/app_loading_indicator.dart';
-import '../../../start/presentation/pages/start_page.dart';
+import '../../../theme/app_colors.dart';
+import '../../../widgets/app_loading_indicator.dart';
+import '../../../../features/user/start/presentation/pages/start_page.dart';
 import '../widgets/brand_header.dart';
 import '../widgets/brand_logo.dart';
 import '../widgets/splash_footer.dart';
@@ -36,7 +37,6 @@ class _SplashScreenState extends State<SplashScreen>
       end: 1.0,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.linear));
 
-    
     _controller.forward();
   }
 
@@ -53,16 +53,19 @@ class _SplashScreenState extends State<SplashScreen>
 
     return BlocListener<SplashBloc, SplashState>(
       listener: (context, state) {
-
         if (state is AuthenticatedAsDoctor) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const DoctorMainWrapper()),
+          );
+        } else if (state is AuthenticatedAsNewDoctor) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const DoctorRegistrationPage()),
           );
         } else if (state is AuthenticatedAsUser) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const MainWrapper()),
           );
-        }else if (state is NotAuthenticated){
+        } else if (state is NotAuthenticated) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const StartPage()),
           );

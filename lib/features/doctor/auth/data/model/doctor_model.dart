@@ -1,6 +1,6 @@
 import 'package:doctor_booking_app/features/doctor/auth/domain/entities/doctor_entity.dart';
 
-class DoctorModel  extends DoctorEntity{
+class DoctorModel  extends DoctorAuthEntity{
     DoctorModel({
     required super.id,
     required super.email,

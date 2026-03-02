@@ -1,7 +1,7 @@
 import 'dart:async';
-
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:doctor_booking_app/core/widgets/app_primary_button.dart';
+import 'package:doctor_booking_app/core/widgets/custom_snack_bar.dart';
 import 'package:doctor_booking_app/features/doctor/auth/presentation/pages/doctor_login_page.dart';
 import 'package:doctor_booking_app/features/user/auth/presentation/bloc/auth_bloc.dart';
 import 'package:doctor_booking_app/features/user/home/presentation/pages/main_wrapper.dart';
@@ -42,6 +42,7 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           _isOtpSent = false;
           _secondsRemaining = 0;
+          enteredOtp = '';
         });
         _timer?.cancel();
       }
@@ -80,13 +81,26 @@ class _LoginPageState extends State<LoginPage> {
       final phone = raw.startsWith('+') ? raw : '+91$raw';
 
       context.read<AuthBloc>().add(SentOtpEvent(phone));
-
-      setState(() {
-        _isOtpSent = true;
-      });
-
       _startResendTimer();
     }
+  }
+
+  // 🔹 Verify OTP
+  void _verifyOtp() {
+    if (enteredOtp.length != 6) {
+      CustomSnackBar.show(context, 'Please enter a 6-digit OTP', isError: true);
+      return;
+    }
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    setState(() {
+      _isVerifying = true;
+    });
+
+    String raw = _mobileController.text.trim();
+    final phone = raw.startsWith('+') ? raw : '+91$raw';
+
+    context.read<AuthBloc>().add(VerifyOtpEvent(phone, enteredOtp));
   }
 
   // 🔹 Auto verify when OTP length == 6
@@ -94,12 +108,7 @@ class _LoginPageState extends State<LoginPage> {
     enteredOtp = otp;
 
     if (otp.length == 6 && !_isVerifying) {
-      _isVerifying = true;
-
-      String raw = _mobileController.text.trim();
-      final phone = raw.startsWith('+') ? raw : '+91$raw';
-
-      context.read<AuthBloc>().add(VerifyOtpEvent(phone, otp));
+      _verifyOtp();
     }
   }
 
@@ -108,27 +117,26 @@ class _LoginPageState extends State<LoginPage> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthOtpSent) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('OTP sent successfully!')),
-          );
-        } 
-        else if (state is AuthVerified) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login completed successfully!')),
-          );
+          setState(() {
+            _isOtpSent = true;
+          });
+          CustomSnackBar.show(context, 'OTP sent successfully!');
+        } else if (state is AuthVerified) {
+          _isVerifying = false;
+          CustomSnackBar.show(context, 'Login completed successfully!');
 
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => const MainWrapper(),
-            ),
+            MaterialPageRoute(builder: (context) => const MainWrapper()),
           );
-        } 
-        else if (state is AuthError) {
-          _isVerifying = false;
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${state.message}')),
+        } else if (state is AuthError) {
+          setState(() {
+            _isVerifying = false;
+          });
+          CustomSnackBar.show(
+            context,
+            'Error: ${state.message}',
+            isError: true,
           );
         }
       },
@@ -160,7 +168,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             );
                           },
-                          child: Text(
+                          child: const Text(
                             'Register as Doctor',
                             style: TextStyle(
                               color: AppColors.medConnectPrimary,
@@ -178,51 +186,43 @@ class _LoginPageState extends State<LoginPage> {
                       LoginForm(
                         mobileFieldKey: _mobileFieldKey,
                         mobileController: _mobileController,
-                        onSendOtp: _sendOtp,
                       ),
-
-                      const SizedBox(height: 18),
 
                       // OTP Section + Resend
-                      Column(
-                        children: [
-                          VerificationSection(
-                            onOtpChanged: _onOtpChanged,
-                          ),
-
-                          if (_isOtpSent) ...[
-                            const SizedBox(height: 10),
-
-                            _secondsRemaining > 0
-                                ? Text(
-                                    'Resend OTP in $_secondsRemaining seconds',
+                      if (_isOtpSent) ...[
+                        const SizedBox(height: 18),
+                        VerificationSection(onOtpChanged: _onOtpChanged),
+                        const SizedBox(height: 10),
+                        Center(
+                          child: _secondsRemaining > 0
+                              ? Text(
+                                  'Resend OTP in $_secondsRemaining seconds',
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                )
+                              : TextButton(
+                                  onPressed: _sendOtp,
+                                  child: const Text(
+                                    'Resend OTP',
                                     style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  )
-                                : TextButton(
-                                    onPressed: _sendOtp,
-                                    child: Text(
-                                      'Resend OTP',
-                                      style: TextStyle(
-                                        color:
-                                            AppColors.medConnectPrimary,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                      color: AppColors.medConnectPrimary,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                          ],
-                        ],
-                      ),
+                                ),
+                        ),
+                      ],
 
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 24),
 
-                      // Send OTP Button
+                      // Toggle Button
                       AppPrimaryButton(
-                        text: 'Send OTP',
-                        onPressed: _sendOtp,
-                        backgroundColor:
-                            AppColors.medConnectPrimary,
+                        text: _isOtpSent
+                            ? (_isVerifying ? 'Verifying...' : 'Verify & Login')
+                            : 'Send OTP',
+                        onPressed: _isVerifying
+                            ? null
+                            : (_isOtpSent ? _verifyOtp : _sendOtp),
+                        backgroundColor: AppColors.medConnectPrimary,
                         width: double.infinity,
                       ),
 

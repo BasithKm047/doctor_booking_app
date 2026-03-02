@@ -1,12 +1,12 @@
 import 'package:doctor_booking_app/features/doctor/auth/domain/entities/doctor_entity.dart';
 import 'package:doctor_booking_app/features/doctor/auth/domain/repositories/doctor_auth_repository.dart';
 
-class GetCurrentDoctor {
+class GetAuthDoctor {
   final DoctorAuthRepository repository;
 
-  const GetCurrentDoctor(this.repository);
+  const GetAuthDoctor(this.repository);
 
-  Future<DoctorEntity?> call() {
-    return repository.getCurrentDoctor();
+  Future<DoctorAuthEntity?> call() {
+    return repository.getAuthDoctor();
   }
 }

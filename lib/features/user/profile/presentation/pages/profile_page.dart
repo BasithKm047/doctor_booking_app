@@ -1,3 +1,4 @@
+import 'package:doctor_booking_app/core/widgets/custom_snack_bar.dart';
 import 'package:doctor_booking_app/features/user/auth/presentation/bloc/auth_bloc.dart';
 import 'package:doctor_booking_app/features/user/auth/presentation/pages/login_page.dart';
 import 'package:flutter/material.dart';
@@ -91,8 +92,10 @@ class ProfilePage extends StatelessWidget {
                     (route) => false,
                   );
                 } else if (state is AuthError) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: ${state.message}')),
+                  CustomSnackBar.show(
+                    context,
+                    'Error: ${state.message}',
+                    isError: true,
                   );
                 }
               },

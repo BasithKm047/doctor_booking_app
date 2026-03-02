@@ -1,4 +1,4 @@
-import '../../../home/domain/models/doctor.dart';
+import '../../../home/domain/entities/user_doctor_entity.dart';
 
 enum MessageType { text, image, file, recommendation }
 
@@ -9,7 +9,7 @@ class ChatMessage {
   final MessageType type;
   final String? attachmentName;
   final String? attachmentPath;
-  final Doctor? recommendedDoctor;
+  final UserDoctorEntity? recommendedDoctor;
 
   ChatMessage({
     required this.text,

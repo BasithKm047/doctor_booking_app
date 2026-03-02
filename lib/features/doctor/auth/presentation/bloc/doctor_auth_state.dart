@@ -1,6 +1,5 @@
 part of 'doctor_auth_bloc.dart';
 
-
 sealed class DoctorAuthState extends Equatable {
   const DoctorAuthState();
 
@@ -15,8 +14,13 @@ class DoctorAuthLoading extends DoctorAuthState {}
 class MagicLinkSent extends DoctorAuthState {}
 
 class DoctorAuthenticated extends DoctorAuthState {
-  final DoctorEntity doctor;
+  final DoctorAuthEntity doctor;
   const DoctorAuthenticated(this.doctor);
+}
+
+class DoctorAuthNewUser extends DoctorAuthState {
+  final DoctorAuthEntity doctor;
+  const DoctorAuthNewUser(this.doctor);
 }
 
 class DoctorUnauthenticated extends DoctorAuthState {}

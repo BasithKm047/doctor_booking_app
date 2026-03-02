@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:doctor_booking_app/features/doctor/registeration/data/mock_registration_data.dart';
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:doctor_booking_app/features/doctor/auth/presentation/widgets/doctor_auth_text_field.dart';
@@ -7,19 +9,29 @@ class Step1PersonalDetails extends StatelessWidget {
   final TextEditingController nameController;
   final String? selectedSpecialty;
   final TextEditingController experienceController;
-  final String? selectedGender;
   final Function(String) onSpecialtyChanged;
-  final Function(String) onGenderChanged;
+  final String? profileImageUrl;
+  final void Function(String?) onPhotoChanged;
+  final bool isUploading;
 
   const Step1PersonalDetails({
     super.key,
     required this.nameController,
-    this.selectedSpecialty,
     required this.experienceController,
-    this.selectedGender,
+    required this.selectedSpecialty,
     required this.onSpecialtyChanged,
-    required this.onGenderChanged,
+    required this.profileImageUrl,
+    required this.onPhotoChanged,
+    this.isUploading = false,
   });
+
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      onPhotoChanged(image.path);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,34 +53,70 @@ class Step1PersonalDetails extends StatelessWidget {
         ),
         const SizedBox(height: 32),
         Center(
-          child: Stack(
-            children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.person, size: 60, color: Colors.grey),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: AppColors.medConnectPrimary,
+          child: GestureDetector(
+            onTap: _pickImage,
+            child: Stack(
+              children: [
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.camera_alt,
-                    color: Colors.white,
-                    size: 20,
+                  child: isUploading
+                      ? const Center(child: CircularProgressIndicator())
+                      : profileImageUrl == null
+                      ? const Icon(Icons.person, size: 60, color: Colors.grey)
+                      : ClipOval(
+                          child: profileImageUrl!.startsWith('http')
+                              ? Image.network(
+                                  profileImageUrl!,
+                                  width: 120,
+                                  height: 120,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                        if (loadingProgress == null) {
+                                          return child;
+                                        }
+                                        return const Center(
+                                          child: CircularProgressIndicator(),
+                                        );
+                                      },
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(
+                                        Icons.person,
+                                        size: 60,
+                                        color: Colors.grey,
+                                      ),
+                                )
+                              : Image.file(
+                                  File(profileImageUrl!),
+                                  width: 120,
+                                  height: 120,
+                                  fit: BoxFit.cover,
+                                ),
+                        ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: AppColors.medConnectPrimary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.camera_alt,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 8),
@@ -79,8 +127,6 @@ class Step1PersonalDetails extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 32),
-        // const Text('Full Name', style: TextStyle(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
         AuthTextField(
           obscureText: false,
           controller: nameController,
@@ -125,8 +171,6 @@ class Step1PersonalDetails extends StatelessWidget {
           onChanged: (value) => onSpecialtyChanged(value!),
         ),
         const SizedBox(height: 24),
-
-        const SizedBox(height: 8),
         AuthTextField(
           controller: experienceController,
           label: 'Years of Experience',
@@ -135,83 +179,7 @@ class Step1PersonalDetails extends StatelessWidget {
           keyboardType: TextInputType.number,
         ),
         const SizedBox(height: 24),
-        const Text('Gender', style: TextStyle(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: _GenderButton(
-                label: 'Male',
-                icon: Icons.male,
-                isSelected: selectedGender == 'Male',
-                onTap: () => onGenderChanged('Male'),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _GenderButton(
-                label: 'Female',
-                icon: Icons.female,
-                isSelected: selectedGender == 'Female',
-                onTap: () => onGenderChanged('Female'),
-              ),
-            ),
-          ],
-        ),
       ],
-    );
-  }
-}
-
-class _GenderButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _GenderButton({
-    required this.label,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.medConnectBackground
-              : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.medConnectPrimary
-                : Colors.grey.shade300,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? AppColors.medConnectPrimary : Colors.grey,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? AppColors.medConnectPrimary : Colors.grey,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

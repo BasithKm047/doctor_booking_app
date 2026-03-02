@@ -1,8 +1,56 @@
+import 'dart:io';
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
+import 'package:doctor_booking_app/features/doctor/registeration/domain/entities/doctor_registration_entity.dart';
 import 'package:flutter/material.dart';
 
 class ProfileHeader extends StatelessWidget {
-  const ProfileHeader({super.key});
+  final DoctorRegistrationEntity doctor;
+
+  const ProfileHeader({super.key, required this.doctor});
+
+  Widget _buildImage(String path) {
+    if (path.startsWith('http')) {
+      return Image.network(
+        path,
+        fit: BoxFit.cover,
+        alignment: Alignment.topCenter,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          );
+        },
+        errorBuilder: _errorIcon,
+      );
+    } else if (path.contains('/') || path.contains('\\')) {
+      return Image.file(
+        File(path),
+        fit: BoxFit.cover,
+        alignment: Alignment.topCenter,
+        errorBuilder: _errorIcon,
+      );
+    } else {
+      return Image.asset(
+        path,
+        fit: BoxFit.cover,
+        alignment: Alignment.topCenter,
+        errorBuilder: _errorIcon,
+      );
+    }
+  }
+
+  Widget _errorIcon(
+    BuildContext context,
+    Object error,
+    StackTrace? stackTrace,
+  ) => Container(
+    color: Colors.blueGrey,
+    child: const Icon(Icons.person, color: Colors.white, size: 50),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -22,15 +70,13 @@ class ProfileHeader extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppColors.medConnectSubtitle,
+                    color: AppColors.medConnectSubtitle.withOpacity(0.2),
                     width: 1,
                   ),
                 ),
-                child: const ClipOval(
-                  child: Image(
-                    image: AssetImage('assets/images/doctor_image_1.png'),
-                    fit: BoxFit.cover,
-                    alignment: Alignment.topCenter,
+                child: ClipOval(
+                  child: _buildImage(
+                    doctor.profileImage ?? 'assets/images/doctor_image_1.png',
                   ),
                 ),
               ),
@@ -40,7 +86,7 @@ class ProfileHeader extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: const BoxDecoration(
-                    color: AppColors.medConnectSubtitle,
+                    color: AppColors.medConnectPrimary,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.edit, color: Colors.white, size: 16),
@@ -49,25 +95,31 @@ class ProfileHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Dr. Sarah Jenkins',
-            style: TextStyle(
+          Text(
+            doctor.name,
+            style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
               color: AppColors.medConnectTitle,
             ),
           ),
-          const Text(
-            'Cardiologist • Heart Hospital',
-            style: TextStyle(fontSize: 14, color: AppColors.medConnectSubtitle),
+          Text(
+            '${doctor.specialization} • Professional Profile',
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.medConnectSubtitle,
+            ),
           ),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildStatItem('Patients', '1.2k+'),
+              _buildStatItem('Experience', '${doctor.experience} Yrs'),
               _buildDivider(),
-              _buildStatItem('Experience', '8 Years'),
+              _buildStatItem(
+                'Consultation',
+                '₹${doctor.consultationFee.toInt()}',
+              ),
               _buildDivider(),
               _buildStatItem('Rating', '4.9'),
             ],

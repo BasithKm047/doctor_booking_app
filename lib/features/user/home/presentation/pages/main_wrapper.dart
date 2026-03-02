@@ -1,3 +1,7 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:doctor_booking_app/core/di/injection.dart';
+import 'package:doctor_booking_app/features/user/home/presentation/bloc/user_home_bloc.dart';
+import 'package:doctor_booking_app/features/user/home/presentation/bloc/user_home_event.dart';
 import 'package:doctor_booking_app/features/user/chat/presentation/pages/chat_page.dart';
 import 'package:doctor_booking_app/features/user/appointment/presantation/pages/appointments_page.dart';
 import 'package:flutter/material.dart';
@@ -40,49 +44,52 @@ class MainWrapperState extends State<MainWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: _pages),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(color: const Color(0xFFF1F5F9), width: 1),
+    return BlocProvider(
+      create: (context) => sl<UserHomeBloc>()..add(FetchUserDoctorsEvent()),
+      child: Scaffold(
+        body: IndexedStack(index: _selectedIndex, children: _pages),
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              top: BorderSide(color: const Color(0xFFF1F5F9), width: 1),
+            ),
           ),
-        ),
-        child: BottomNavigationBar(
-          elevation: 0,
-          backgroundColor: Colors.white,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: AppColors.medConnectPrimary,
-          unselectedItemColor: const Color(0xFF94A3B8),
-          currentIndex: _selectedIndex,
-          onTap: (index) {
-            setState(() {
-              _selectedIndex = index;
-            });
-          },
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'HOME',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today_rounded),
-              activeIcon: Icon(Icons.calendar_today),
-              label: 'APPOINTMENTS',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_outline),
-              activeIcon: Icon(Icons.chat_bubble),
-              label: 'CHAT',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'PROFILE',
-            ),
-          ],
+          child: BottomNavigationBar(
+            elevation: 0,
+            backgroundColor: Colors.white,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: AppColors.medConnectPrimary,
+            unselectedItemColor: const Color(0xFF94A3B8),
+            currentIndex: _selectedIndex,
+            onTap: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined),
+                activeIcon: Icon(Icons.home),
+                label: 'HOME',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.calendar_today_rounded),
+                activeIcon: Icon(Icons.calendar_today),
+                label: 'APPOINTMENTS',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.chat_bubble_outline),
+                activeIcon: Icon(Icons.chat_bubble),
+                label: 'CHAT',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person),
+                label: 'PROFILE',
+              ),
+            ],
+          ),
         ),
       ),
     );

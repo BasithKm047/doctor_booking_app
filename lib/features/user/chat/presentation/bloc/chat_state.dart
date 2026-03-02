@@ -1,11 +1,11 @@
 import '../../domain/models/chat_message.dart';
-import '../../../home/domain/models/doctor.dart';
+import '../../../home/domain/entities/user_doctor_entity.dart';
 
 class ChatState {
   final List<ChatMessage> messages;
   final String currentStep;
   final bool isTyping;
-  final Doctor? recommendedDoctor;
+  final UserDoctorEntity? recommendedDoctor;
 
   ChatState({
     required this.messages,
@@ -18,7 +18,7 @@ class ChatState {
     List<ChatMessage>? messages,
     String? currentStep,
     bool? isTyping,
-    Doctor? recommendedDoctor,
+    UserDoctorEntity? recommendedDoctor,
   }) {
     return ChatState(
       messages: messages ?? this.messages,

@@ -1,13 +1,30 @@
+import 'package:doctor_booking_app/core/service/client.dart';
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:doctor_booking_app/features/doctor/auth/presentation/bloc/doctor_auth_bloc.dart';
 import 'package:doctor_booking_app/features/doctor/auth/presentation/pages/doctor_login_page.dart';
+import 'package:doctor_booking_app/features/doctor/profile/presantation/bloc/profile_bloc.dart';
 import 'package:doctor_booking_app/features/doctor/profile/presantation/widgets/profile_header.dart';
 import 'package:doctor_booking_app/features/doctor/profile/presantation/widgets/profile_menu_item.dart';
+import 'package:doctor_booking_app/features/doctor/registeration/domain/entities/doctor_registration_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class DoctorProfilePage extends StatelessWidget {
+class DoctorProfilePage extends StatefulWidget {
   const DoctorProfilePage({super.key});
+
+  @override
+  State<DoctorProfilePage> createState() => _DoctorProfilePageState();
+}
+
+class _DoctorProfilePageState extends State<DoctorProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    final userId = supabase.auth.currentUser?.id;
+    if (userId != null) {
+      context.read<ProfileBloc>().add(FetchProfileEvent(userId));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,119 +61,154 @@ class DoctorProfilePage extends StatelessWidget {
             ),
           ],
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              const ProfileHeader(),
-              const SizedBox(height: 12),
-              _buildActionCard(
-                title: 'Account Settings',
-                items: [
-                  ProfileMenuItem(
-                    icon: Icons.person_outline,
-                    title: 'Personal Information',
-                    subtitle: 'Name, Phone, Email',
-                    onTap: () {},
-                  ),
-                  ProfileMenuItem(
-                    icon: Icons.history_edu_outlined,
-                    title: 'Professional Details',
-                    subtitle: 'License, Education, Bio',
-                    onTap: () {},
-                  ),
-                  ProfileMenuItem(
-                    icon: Icons.business_outlined,
-                    title: 'Clinic Settings',
-                    subtitle: 'Address, Fees, Hours',
-                    onTap: () {},
-                  ),
-                ],
-              ),
-              _buildActionCard(
-                title: 'App Settings',
-                items: [
-                  ProfileMenuItem(
-                    icon: Icons.notifications_none,
-                    title: 'Notifications',
-                    onTap: () {},
-                  ),
-                  ProfileMenuItem(
-                    icon: Icons.lock_outline,
-                    title: 'Security',
-                    onTap: () {},
-                  ),
-                  ProfileMenuItem(
-                    icon: Icons.help_outline,
-                    title: 'Help & Support',
-                    onTap: () {},
-                  ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 24,
-                ),
+        body: BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, state) {
+            if (state is ProfileLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is ProfileLoaded) {
+              return _buildProfileContent(context, state.doctor);
+            } else if (state is ProfileError) {
+              return Center(
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ElevatedButton(
-                      onPressed: () => _showLogoutDialog(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade50,
-                        foregroundColor: Colors.red,
-                        minimumSize: const Size(double.infinity, 56),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.logout),
-                          SizedBox(width: 12),
-                          Text(
-                            'Logout',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
+                    Text(
+                      state.message,
+                      style: const TextStyle(color: Colors.red),
                     ),
                     const SizedBox(height: 16),
-                    TextButton(
+                    ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                            builder: (_) => const DoctorLoginPage(),
-                          ),
-                          (route) => false,
-                        );
+                        final authState = context.read<DoctorAuthBloc>().state;
+                        if (authState is DoctorAuthenticated) {
+                          context.read<ProfileBloc>().add(
+                            FetchProfileEvent(authState.doctor.id),
+                          );
+                        }
                       },
-                      child: const Text(
-                        'Create Another Account / Sign Up',
-                        style: TextStyle(
-                          color: AppColors.medConnectPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: const Text('Retry'),
                     ),
                   ],
                 ),
+              );
+            }
+            return const Center(child: Text('Please wait...'));
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileContent(
+    BuildContext context,
+    DoctorRegistrationEntity doctor,
+  ) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        children: [
+          ProfileHeader(doctor: doctor),
+          const SizedBox(height: 12),
+          _buildActionCard(
+            title: 'Account Settings',
+            items: [
+              ProfileMenuItem(
+                icon: Icons.person_outline,
+                title: 'Personal Information',
+                subtitle: 'Name, Phone, Email',
+                onTap: () {},
               ),
-              const Text(
-                'App Version 1.0.2',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.medConnectSubtitle,
-                ),
+              ProfileMenuItem(
+                icon: Icons.history_edu_outlined,
+                title: 'Professional Details',
+                subtitle: 'License, Education, Bio',
+                onTap: () {},
               ),
-              const SizedBox(height: 40),
+              ProfileMenuItem(
+                icon: Icons.business_outlined,
+                title: 'Clinic Settings',
+                subtitle: 'Address, Fees, Hours',
+                onTap: () {},
+              ),
             ],
           ),
-        ),
+          _buildActionCard(
+            title: 'App Settings',
+            items: [
+              ProfileMenuItem(
+                icon: Icons.notifications_none,
+                title: 'Notifications',
+                onTap: () {},
+              ),
+              ProfileMenuItem(
+                icon: Icons.lock_outline,
+                title: 'Security',
+                onTap: () {},
+              ),
+              ProfileMenuItem(
+                icon: Icons.help_outline,
+                title: 'Help & Support',
+                onTap: () {},
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Column(
+              children: [
+                ElevatedButton(
+                  onPressed: () => _showLogoutDialog(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.shade50,
+                    foregroundColor: Colors.red,
+                    minimumSize: const Size(double.infinity, 56),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.logout),
+                      SizedBox(width: 12),
+                      Text(
+                        'Logout',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (_) => const DoctorLoginPage(),
+                      ),
+                      (route) => false,
+                    );
+                  },
+                  child: const Text(
+                    'Create Another Account / Sign Up',
+                    style: TextStyle(
+                      color: AppColors.medConnectPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Text(
+            'App Version 1.0.2',
+            style: TextStyle(fontSize: 12, color: AppColors.medConnectSubtitle),
+          ),
+          const SizedBox(height: 40),
+        ],
       ),
     );
   }

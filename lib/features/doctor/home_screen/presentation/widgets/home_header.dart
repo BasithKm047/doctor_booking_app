@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -12,6 +13,61 @@ class HomeHeader extends StatelessWidget {
     required this.specialty,
     required this.imageUrl,
   });
+
+  Widget _buildImage(String path) {
+    if (path.startsWith('http')) {
+      return Image.network(
+        path,
+        width: 70,
+        height: 70,
+        fit: BoxFit.cover,
+        alignment: Alignment.topCenter,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const Center(
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          );
+        },
+        errorBuilder: _errorIcon,
+      );
+    } else if (path.contains('/') || path.contains('\\')) {
+      return Image.file(
+        File(path),
+        width: 70,
+        height: 70,
+        fit: BoxFit.cover,
+        alignment: Alignment.topCenter,
+        errorBuilder: _errorIcon,
+      );
+    } else {
+      return Image.asset(
+        path,
+        width: 70,
+        height: 70,
+        fit: BoxFit.cover,
+        alignment: Alignment.topCenter,
+        errorBuilder: _errorIcon,
+      );
+    }
+  }
+
+  Widget _errorIcon(
+    BuildContext context,
+    Object error,
+    StackTrace? stackTrace,
+  ) => Container(
+    width: 60,
+    height: 60,
+    decoration: const BoxDecoration(
+      color: Colors.blueGrey,
+      shape: BoxShape.circle,
+    ),
+    child: const Icon(Icons.person, color: Colors.white, size: 30),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -31,28 +87,7 @@ class HomeHeader extends StatelessWidget {
                   width: 1,
                 ),
               ),
-              child: ClipOval(
-                child: Image.asset(
-                  imageUrl,
-                  width: 70,
-                  height: 70,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.topCenter,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    width: 60,
-                    height: 60,
-                    decoration: const BoxDecoration(
-                      color: Colors.blueGrey,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                  ),
-                ),
-              ),
+              child: ClipOval(child: _buildImage(imageUrl)),
             ),
           ),
           const SizedBox(width: 15),

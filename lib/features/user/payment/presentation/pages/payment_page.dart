@@ -1,12 +1,12 @@
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
-import '../../../home/domain/models/doctor.dart';
+import '../../../home/domain/entities/user_doctor_entity.dart';
 import '../widgets/payment_doctor_card.dart';
 import '../widgets/payment_info_card.dart';
 import '../widgets/payment_method_option.dart';
 
 class PaymentPage extends StatefulWidget {
-  final Doctor doctor;
+  final UserDoctorEntity doctor;
 
   const PaymentPage({super.key, required this.doctor});
 
@@ -68,7 +68,7 @@ class _PaymentPageState extends State<PaymentPage> {
             PaymentInfoCard(
               date: 'Oct 24, 2023',
               time: '10:30 AM',
-              fee: widget.doctor.fee,
+              fee: widget.doctor.consultationFee,
             ),
             const SizedBox(height: 32),
             _buildSectionHeader(
@@ -110,10 +110,10 @@ class _PaymentPageState extends State<PaymentPage> {
                   borderRadius: BorderRadius.circular(28),
                 ),
                 elevation: 4,
-                shadowColor: const Color(0xFF1E5BB1).withValues(alpha: 0.4),
+                shadowColor: const Color(0xFF1E5BB1).withOpacity(0.4),
               ),
               child: Text(
-                'Pay \$${widget.doctor.fee.toStringAsFixed(2)}',
+                'Pay \$${widget.doctor.consultationFee.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

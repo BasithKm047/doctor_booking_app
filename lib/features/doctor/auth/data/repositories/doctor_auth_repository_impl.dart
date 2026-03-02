@@ -22,15 +22,16 @@ class DoctorAuthRepositoryImpl implements DoctorAuthRepository {
   }
 
   @override
-  Future<DoctorEntity?> getCurrentDoctor() {
-    AppLogger.info('Repository: Getting current doctor profile');
-    return remote.getCurrentUserProfile();
-  }
-
-  @override
   Future<void> signOut() {
     AppLogger.info('Repository: Signing out');
     return remote.signOut();
+  }
+
+  @override
+  Future<DoctorAuthEntity?> getAuthDoctor() async {
+    final user = supabase.auth.currentUser;
+    if (user == null) return null;
+    return DoctorAuthEntity(id: user.id, email: user.email!, role: 'doctor');
   }
 
   @override

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../home/domain/models/doctor.dart';
+import '../../../home/domain/entities/user_doctor_entity.dart';
 import '../../../home/presentation/widgets/doctor_card.dart';
 import '../../../home/presentation/pages/main_wrapper.dart';
 
 class RecommendationResultScreen extends StatefulWidget {
-  final Doctor doctor;
+  final UserDoctorEntity doctor;
   const RecommendationResultScreen({super.key, required this.doctor});
 
   @override
@@ -59,69 +59,70 @@ class _RecommendationResultScreenState extends State<RecommendationResultScreen>
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0,vertical: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 30),
             child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: const Text(
-                  "We found the perfect match!",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 8),
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: const Text(
-                  "Based on your symptoms, we recommend consulting with this specialist.",
-                  style: TextStyle(fontSize: 16, color: Color(0xFF64748B)),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 48),
-    
-              RepaintBoundary(
-                child: ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: DoctorCard(doctor: widget.doctor),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const MainWrapper(),
-                      ),
-                      (route) => false,
-                    );
-                  },
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                FadeTransition(
+                  opacity: _fadeAnimation,
                   child: const Text(
-                    "Skip to Home",
+                    "We found the perfect match!",
                     style: TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: const Text(
+                    "Based on your symptoms, we recommend consulting with this specialist.",
+                    style: TextStyle(fontSize: 16, color: Color(0xFF64748B)),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 48),
+
+                RepaintBoundary(
+                  child: ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: DoctorCard(doctor: widget.doctor),
                     ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MainWrapper(),
+                        ),
+                        (route) => false,
+                      );
+                    },
+                    child: const Text(
+                      "Skip to Home",
+                      style: TextStyle(
+                        color: Color(0xFF64748B),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      )),
+      ),
     );
   }
 }

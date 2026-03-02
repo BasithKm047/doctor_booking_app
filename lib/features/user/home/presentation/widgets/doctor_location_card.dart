@@ -53,7 +53,7 @@ class DoctorLocationCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Mental Wellness Clinic',
+                            'MedConnect Clinic - Tirurangadi',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -62,7 +62,7 @@ class DoctorLocationCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           const Text(
-                            '123 Therapy Lane, Manhattan, NY',
+                            'Tirurangadi, Malappuram, Kerala, India',
                             style: TextStyle(
                               fontSize: 14,
                               color: Color(0xFF64748B),
