@@ -1,5 +1,6 @@
 class Appointment {
   final String id;
+  final String doctorId;
   final String doctorName;
   final String specialty;
   final String date;
@@ -10,6 +11,7 @@ class Appointment {
 
   Appointment({
     required this.id,
+    required this.doctorId,
     required this.doctorName,
     required this.specialty,
     required this.date,

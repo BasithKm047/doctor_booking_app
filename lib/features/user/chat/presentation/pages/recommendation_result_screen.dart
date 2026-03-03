@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../home/domain/entities/user_doctor_entity.dart';
+import '../../../home/presentation/pages/appointment_booking_screen.dart';
 import '../../../home/presentation/widgets/doctor_card.dart';
 import '../../../home/presentation/pages/main_wrapper.dart';
 
@@ -16,6 +19,7 @@ class RecommendationResultScreen extends StatefulWidget {
 
 class _RecommendationResultScreenState extends State<RecommendationResultScreen>
     with SingleTickerProviderStateMixin {
+  static const String _chatIntroSeenPrefix = 'chat_intro_seen_';
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
@@ -59,12 +63,24 @@ class _RecommendationResultScreenState extends State<RecommendationResultScreen>
     super.dispose();
   }
 
-  void _goToHome() {
+  Future<void> _markRecommendationCompleted() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('$_chatIntroSeenPrefix$userId', true);
+  }
+
+  Future<void> _goToHome() async {
     if (!mounted || _navigated) return;
     _navigated = true;
+    await _markRecommendationCompleted();
+    if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => const MainWrapper(initialIndex: 0)),
+      MaterialPageRoute(
+        builder: (context) => const MainWrapper(initialIndex: 0),
+      ),
       (route) => false,
     );
   }
@@ -113,10 +129,14 @@ class _RecommendationResultScreenState extends State<RecommendationResultScreen>
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                const SizedBox(height: 8),
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: TextButton(
-                    onPressed: _goToHome,
+                    onPressed: () {
+                      _goToHome();
+                    },
                     child: const Text(
                       "Go to Home",
                       style: TextStyle(

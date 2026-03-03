@@ -124,11 +124,10 @@ class _LoginPageState extends State<LoginPage> {
         } else if (state is AuthVerified) {
           _isVerifying = false;
           CustomSnackBar.show(context, 'Login completed successfully!');
-
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => const MainWrapper(initialIndex: 2),
+              builder: (context) => const MainWrapper(),
             ),
           );
         } else if (state is AuthError) {

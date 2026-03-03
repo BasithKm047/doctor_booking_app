@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../home/domain/entities/user_doctor_entity.dart';
 import '../../../home/domain/models/appointment.dart';
+import '../../../home/presentation/pages/appointment_booking_screen.dart';
 import '../widgets/appointment_card.dart';
 import '../widgets/appointment_section_header.dart';
 
@@ -18,6 +20,7 @@ class AppointmentsPage extends StatefulWidget {
 
 class _AppointmentsPageState extends State<AppointmentsPage> {
   late Future<List<Appointment>> _appointmentsFuture;
+  static const Duration _slotDuration = Duration(minutes: 30);
 
   @override
   void initState() {
@@ -32,19 +35,17 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     final rows = await sl<UserAppointmentRepository>().fetchUserAppointments(
       userId,
     );
-    final now = DateTime.now();
-
     return rows.map((item) {
       final appointmentDateTime = _parseAppointmentDateTime(
         item['appointment_date']?.toString(),
         item['appointment_time']?.toString(),
       );
       final status = (item['status'] ?? '').toString().toLowerCase();
-      final isPendingOrBooked = status == 'pending' || status == 'booked';
-      final isUpcoming = isPendingOrBooked && appointmentDateTime.isAfter(now);
+      final isUpcoming = _isUpcomingStatus(status);
 
       return Appointment(
         id: item['id'].toString(),
+        doctorId: item['doctor_id']?.toString() ?? '',
         doctorName: item['doctor_name']?.toString() ?? 'Doctor',
         specialty: item['doctor_specialization']?.toString() ?? 'Specialist',
         date: DateFormat('MMM dd, yyyy').format(appointmentDateTime),
@@ -60,6 +61,21 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       final bdt = _parseFromUi(b.date, b.time);
       return adt.compareTo(bdt);
     });
+  }
+
+  bool _isUpcomingStatus(String status) {
+    final normalized = status.toLowerCase();
+    return normalized == 'pending' || normalized == 'booked';
+  }
+
+  bool _isPastStatus(String status) {
+    final normalized = status.toLowerCase();
+    return normalized == 'confirmed' ||
+        normalized == 'rejected' ||
+        normalized == 'user_cancelled' ||
+        normalized == 'user_canceled' ||
+        normalized == 'cancelled' ||
+        normalized == 'canceled';
   }
 
   DateTime _parseAppointmentDateTime(String? date, String? time) {
@@ -161,31 +177,16 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   }
 
   Future<void> _rescheduleAppointment(Appointment appointment) async {
-    final now = DateTime.now();
-    final current = _parseFromUi(appointment.date, appointment.time);
+    final action = await _showRescheduleOptions();
+    if (!mounted || action == null) return;
 
-    final selectedDate = await showDatePicker(
-      context: context,
-      initialDate: current.isBefore(now) ? now : current,
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 365)),
-    );
-    if (selectedDate == null) return;
+    if (action == _RescheduleAction.openBooking) {
+      _openRescheduleInBookingScreen(appointment);
+      return;
+    }
 
-    if (!mounted) return;
-    final selectedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(current),
-    );
-    if (selectedTime == null) return;
-
-    final mergedDateTime = DateTime(
-      selectedDate.year,
-      selectedDate.month,
-      selectedDate.day,
-      selectedTime.hour,
-      selectedTime.minute,
-    );
+    final mergedDateTime = await _pickDoctorAvailableSlot(appointment);
+    if (mergedDateTime == null) return;
 
     try {
       await sl<UserAppointmentRepository>().rescheduleAppointment(
@@ -203,6 +204,179 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         'Failed to reschedule appointment',
         isError: true,
       );
+    }
+  }
+
+  Future<_RescheduleAction?> _showRescheduleOptions() {
+    return showModalBottomSheet<_RescheduleAction>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.calendar_today_rounded),
+                  title: const Text('Reschedule in booking screen'),
+                  subtitle: const Text('Navigate and pick doctor availability'),
+                  onTap: () => Navigator.pop(context, _RescheduleAction.openBooking),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.access_time_rounded),
+                  title: const Text('Quick reschedule here'),
+                  subtitle: const Text('Select from available date and time slots'),
+                  onTap: () => Navigator.pop(context, _RescheduleAction.quickSlot),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _openRescheduleInBookingScreen(Appointment appointment) {
+    if (appointment.doctorId.isEmpty) {
+      CustomSnackBar.show(
+        context,
+        'Doctor details not available for this appointment',
+        isError: true,
+      );
+      return;
+    }
+
+    final doctor = UserDoctorEntity(
+      id: appointment.doctorId,
+      name: appointment.doctorName,
+      profileImage: appointment.imagePath,
+      specialization: appointment.specialty,
+      experience: 0,
+      consultationFee: 0,
+      bio: '',
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AppointmentBookingScreen(doctor: doctor),
+      ),
+    );
+  }
+
+  Future<DateTime?> _pickDoctorAvailableSlot(Appointment appointment) async {
+    if (appointment.doctorId.isEmpty) {
+      CustomSnackBar.show(
+        context,
+        'Doctor availability not found',
+        isError: true,
+      );
+      return null;
+    }
+
+    try {
+      final availability = await sl<UserAppointmentRepository>()
+          .fetchDoctorAvailability(appointment.doctorId);
+      final slots = _expandSlots(availability);
+      if (!mounted) return null;
+
+      if (slots.isEmpty) {
+        CustomSnackBar.show(
+          context,
+          'No available slots for this doctor',
+          isError: true,
+        );
+        return null;
+      }
+
+      return showModalBottomSheet<DateTime>(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) {
+          return SafeArea(
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.65,
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Select New Time',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const Divider(),
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: slots.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final slot = slots[index];
+                        return ListTile(
+                          title: Text(DateFormat('EEE, MMM dd, yyyy').format(slot)),
+                          subtitle: Text(DateFormat('hh:mm a').format(slot)),
+                          onTap: () => Navigator.pop(context, slot),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    } catch (_) {
+      if (!mounted) return null;
+      CustomSnackBar.show(
+        context,
+        'Failed to load doctor availability',
+        isError: true,
+      );
+      return null;
+    }
+  }
+
+  List<DateTime> _expandSlots(List<Map<String, dynamic>> availability) {
+    final now = DateTime.now();
+    final List<DateTime> slots = [];
+
+    for (final item in availability) {
+      final dateText = item['available_date']?.toString();
+      final startText = item['start_time']?.toString();
+      final endText = item['end_time']?.toString();
+      if (dateText == null || startText == null || endText == null) continue;
+
+      final day = DateTime.tryParse(dateText);
+      final start = _parseTimeOfDay(startText);
+      final end = _parseTimeOfDay(endText);
+      if (day == null || start == null || end == null) continue;
+
+      var cursor = DateTime(day.year, day.month, day.day, start.hour, start.minute);
+      final endDateTime = DateTime(day.year, day.month, day.day, end.hour, end.minute);
+
+      while (cursor.isBefore(endDateTime) || cursor.isAtSameMomentAs(endDateTime)) {
+        if (cursor.isAfter(now)) {
+          slots.add(cursor);
+        }
+        cursor = cursor.add(_slotDuration);
+      }
+    }
+
+    slots.sort((a, b) => a.compareTo(b));
+    return slots;
+  }
+
+  TimeOfDay? _parseTimeOfDay(String value) {
+    try {
+      final parsed = DateTime.parse('2000-01-01 ${value.trim()}');
+      return TimeOfDay(hour: parsed.hour, minute: parsed.minute);
+    } catch (_) {
+      try {
+        final parsed = DateFormat('hh:mm a').parseLoose(value.trim());
+        return TimeOfDay(hour: parsed.hour, minute: parsed.minute);
+      } catch (_) {
+        return null;
+      }
     }
   }
 
@@ -275,9 +449,11 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
             final allAppointments = snapshot.data ?? const [];
             final upcoming = allAppointments
-                .where((a) => a.isUpcoming)
+                .where((a) => _isUpcomingStatus(a.status))
                 .toList();
-            final past = allAppointments.where((a) => !a.isUpcoming).toList();
+            final past = allAppointments
+                .where((a) => _isPastStatus(a.status))
+                .toList();
 
             return TabBarView(
               children: [
@@ -335,7 +511,12 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   String _statusLabel(String status) {
     switch (status.toLowerCase()) {
       case 'rejected':
-        return 'Canceled';
+        return 'Rejected';
+      case 'user_cancelled':
+      case 'user_canceled':
+      case 'cancelled':
+      case 'canceled':
+        return 'User Canceled';
       case 'confirmed':
         return 'Approved';
       case 'past':
@@ -351,6 +532,11 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     switch (status.toLowerCase()) {
       case 'rejected':
         return const Color(0xFFDC2626);
+      case 'user_cancelled':
+      case 'user_canceled':
+      case 'cancelled':
+      case 'canceled':
+        return const Color(0xFFEA580C);
       case 'confirmed':
         return const Color(0xFF16A34A);
       case 'past':
@@ -362,3 +548,5 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     }
   }
 }
+
+enum _RescheduleAction { openBooking, quickSlot }
