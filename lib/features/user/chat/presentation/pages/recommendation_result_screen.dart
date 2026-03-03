@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../home/domain/entities/user_doctor_entity.dart';
 import '../../../home/presentation/widgets/doctor_card.dart';
@@ -17,6 +19,8 @@ class _RecommendationResultScreenState extends State<RecommendationResultScreen>
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
+  Timer? _homeRedirectTimer;
+  bool _navigated = false;
 
   @override
   void initState() {
@@ -44,12 +48,25 @@ class _RecommendationResultScreenState extends State<RecommendationResultScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).unfocus();
     });
+
+    _homeRedirectTimer = Timer(const Duration(seconds: 3), _goToHome);
   }
 
   @override
   void dispose() {
+    _homeRedirectTimer?.cancel();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _goToHome() {
+    if (!mounted || _navigated) return;
+    _navigated = true;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const MainWrapper(initialIndex: 0)),
+      (route) => false,
+    );
   }
 
   @override
@@ -99,17 +116,9 @@ class _RecommendationResultScreenState extends State<RecommendationResultScreen>
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: TextButton(
-                    onPressed: () {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MainWrapper(),
-                        ),
-                        (route) => false,
-                      );
-                    },
+                    onPressed: _goToHome,
                     child: const Text(
-                      "Skip to Home",
+                      "Go to Home",
                       style: TextStyle(
                         color: Color(0xFF64748B),
                         fontSize: 16,

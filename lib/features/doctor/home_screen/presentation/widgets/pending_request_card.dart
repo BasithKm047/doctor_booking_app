@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:doctor_booking_app/features/doctor/home_screen/domain/entities/doctor_request_entity.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,46 @@ class PendingRequestCard extends StatelessWidget {
     required this.onAccept,
     required this.onReject,
   });
+
+  Widget _buildPatientImage(String imagePath) {
+    final normalized = imagePath.trim();
+    if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+      return Image.network(
+        normalized,
+        width: 50,
+        height: 80,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _fallbackAvatar(),
+      );
+    }
+
+    if (normalized.startsWith('assets/')) {
+      return Image.asset(
+        normalized,
+        width: 50,
+        height: 80,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _fallbackAvatar(),
+      );
+    }
+
+    return Image.file(
+      File(normalized),
+      width: 50,
+      height: 80,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => _fallbackAvatar(),
+    );
+  }
+
+  Widget _fallbackAvatar() {
+    return Container(
+      width: 50,
+      height: 50,
+      color: Colors.blueGrey.shade100,
+      child: const Icon(Icons.person, color: Colors.blueGrey),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,18 +79,7 @@ class PendingRequestCard extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  request.patientImageUrl,
-                  width: 50,
-                  height: 80,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    width: 50,
-                    height: 50,
-                    color: Colors.blueGrey.shade100,
-                    child: const Icon(Icons.person, color: Colors.blueGrey),
-                  ),
-                ),
+                child: _buildPatientImage(request.patientImageUrl),
               ),
               const SizedBox(width: 15),
               Expanded(
@@ -105,7 +136,10 @@ class PendingRequestCard extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.medConnectPrimary,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 2,vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 2,
+                        vertical: 2,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

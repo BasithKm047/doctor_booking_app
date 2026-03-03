@@ -13,6 +13,24 @@ class ScheduleTimelineItem extends StatelessWidget {
     this.isLast = false,
   });
 
+  Color get _statusColor {
+    switch (item.status) {
+      case ScheduleStatus.confirmed:
+        return Colors.green;
+      case ScheduleStatus.pending:
+        return Colors.orange;
+    }
+  }
+
+  String get _statusText {
+    switch (item.status) {
+      case ScheduleStatus.confirmed:
+        return 'CONFIRMED';
+      case ScheduleStatus.pending:
+        return 'PENDING';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -30,9 +48,7 @@ class ScheduleTimelineItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: item.isHighPriority
-                          ? AppColors.medConnectPrimary
-                          : AppColors.medConnectTitle.withOpacity(0.8),
+                      color: _statusColor,
                     ),
                   ),
                   if (!isLast)
@@ -52,18 +68,11 @@ class ScheduleTimelineItem extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 15),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: item.isHighPriority
-                      ? AppColors.medConnectPrimary.withOpacity(0.08)
-                      : Colors.white,
+                  color: _statusColor.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(16),
-                  border: item.isHighPriority
-                      ? const Border(
-                          left: BorderSide(
-                            color: AppColors.medConnectPrimary,
-                            width: 4,
-                          ),
-                        )
-                      : Border.all(color: Colors.grey.shade100),
+                  border: Border(
+                    left: BorderSide(color: _statusColor, width: 4),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -87,24 +96,43 @@ class ScheduleTimelineItem extends StatelessWidget {
                               color: AppColors.medConnectSubtitle,
                             ),
                           ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _statusColor.withOpacity(0.14),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              _statusText,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: _statusColor,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    if (item.isHighPriority)
+                    if (item.status == ScheduleStatus.confirmed)
                       Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: AppColors.medConnectPrimary,
+                        decoration: BoxDecoration(
+                          color: _statusColor,
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
-                          Icons.play_arrow,
+                          Icons.check,
                           color: Colors.white,
                           size: 16,
                         ),
                       )
                     else
-                      const Icon(Icons.more_vert, color: Colors.grey, size: 20),
+                      Icon(Icons.schedule, color: _statusColor, size: 20),
                   ],
                 ),
               ),

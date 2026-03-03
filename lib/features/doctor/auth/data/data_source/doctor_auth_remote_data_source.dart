@@ -20,7 +20,7 @@ class DoctorAuthRemoteDataSource {
     } on AuthException catch (e) {
       AppLogger.warning('Auth error for doctor: $email - ${e.message}');
       if (e.message.toLowerCase().contains('invalid login credentials')) {
-        throw Exception('you are not signup please register');
+        throw Exception('you are not registered as a doctor please register');
       }
       throw Exception(e.message);
     }

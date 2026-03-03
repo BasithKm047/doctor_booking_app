@@ -6,6 +6,7 @@ class Appointment {
   final String time;
   final String imagePath;
   final bool isUpcoming;
+  final String status;
 
   Appointment({
     required this.id,
@@ -15,5 +16,6 @@ class Appointment {
     required this.time,
     required this.imagePath,
     this.isUpcoming = true,
+    this.status = 'pending',
   });
 }

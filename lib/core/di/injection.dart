@@ -1,3 +1,10 @@
+import 'package:doctor_booking_app/features/doctor/appointment/data/datasources/doctor_appointment_remote_data_source.dart';
+import 'package:doctor_booking_app/features/doctor/appointment/data/repositories/doctor_appointment_repository_impl.dart';
+import 'package:doctor_booking_app/features/doctor/appointment/domain/repositories/doctor_appointment_repository.dart';
+import 'package:doctor_booking_app/features/doctor/appointment/domain/usecases/accept_appointment_usecase.dart';
+import 'package:doctor_booking_app/features/doctor/appointment/domain/usecases/get_doctor_appointments_usecase.dart';
+import 'package:doctor_booking_app/features/doctor/appointment/domain/usecases/reject_appointment_usecase.dart';
+import 'package:doctor_booking_app/features/doctor/appointment/presantation/bloc/doctor_appointments_bloc.dart';
 import 'package:doctor_booking_app/features/doctor/auth/data/data_source/doctor_auth_remote_data_source.dart';
 import 'package:doctor_booking_app/features/doctor/auth/data/repositories/doctor_auth_repository_impl.dart';
 import 'package:doctor_booking_app/features/doctor/auth/domain/repositories/doctor_auth_repository.dart';
@@ -34,15 +41,97 @@ import 'package:doctor_booking_app/features/user/home/presentation/bloc/user_hom
 import 'package:doctor_booking_app/features/doctor/profile/domain/usecases/get_doctor_profile.dart';
 import 'package:doctor_booking_app/features/doctor/profile/presantation/bloc/profile_bloc.dart';
 import 'package:doctor_booking_app/core/splash/presentation/bloc/splash_bloc.dart';
+import 'package:doctor_booking_app/features/doctor/shedule/data/datasources/schedule_remote_data_source.dart';
+import 'package:doctor_booking_app/features/doctor/shedule/data/repositories/schedule_repository_impl.dart';
+import 'package:doctor_booking_app/features/doctor/shedule/domain/repositories/schedule_repository.dart';
+import 'package:doctor_booking_app/features/doctor/shedule/domain/usecases/save_schedule_usecase.dart';
+import 'package:doctor_booking_app/features/doctor/shedule/presantation/bloc/schedule_bloc.dart';
+import 'package:doctor_booking_app/features/user/appointment/data/datasources/user_appointment_remote_data_source.dart';
+import 'package:doctor_booking_app/features/user/appointment/data/repositories/user_appointment_repository_impl.dart';
+import 'package:doctor_booking_app/features/user/appointment/domain/repositories/user_appointment_repository.dart';
+import 'package:doctor_booking_app/features/user/appointment/domain/usecases/book_appointment_usecase.dart';
+import 'package:doctor_booking_app/features/user/appointment/domain/usecases/get_doctor_availability_usecase.dart';
+import 'package:doctor_booking_app/features/user/appointment/presantation/bloc/booking_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final sl = GetIt.instance;
 
 Future<void> setupInjection() async {
+  // Core
+  sl.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
+
   await _initUser();
   await _initDoctor();
   await _initDoctorCrud();
+  await _initDoctorSchedule();
   await _initUserHome();
+  await _initUserBooking();
+  _initDoctorAppointments();
+}
+
+void _initDoctorAppointments() {
+  // Data sources
+  sl.registerLazySingleton<DoctorAppointmentRemoteDataSource>(
+    () => DoctorAppointmentRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+
+  // Repositories
+  sl.registerLazySingleton<DoctorAppointmentRepository>(
+    () => DoctorAppointmentRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetDoctorAppointmentsUseCase(sl()));
+  sl.registerLazySingleton(() => AcceptAppointmentUseCase(sl()));
+  sl.registerLazySingleton(() => RejectAppointmentUseCase(sl()));
+
+  // Blocs
+  sl.registerFactory(
+    () => DoctorAppointmentsBloc(
+      getDoctorAppointments: sl(),
+      acceptAppointment: sl(),
+      rejectAppointment: sl(),
+    ),
+  );
+}
+
+Future<void> _initUserBooking() async {
+  // BLoC
+  sl.registerFactory(
+    () => BookingBloc(getDoctorAvailability: sl(), bookAppointment: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(
+    () => GetDoctorAvailabilityUseCase(repository: sl()),
+  );
+  sl.registerLazySingleton(() => BookAppointmentUseCase(repository: sl()));
+
+  // Repository
+  sl.registerLazySingleton<UserAppointmentRepository>(
+    () => UserAppointmentRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<UserAppointmentRemoteDataSource>(
+    () => UserAppointmentRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+}
+
+Future<void> _initDoctorSchedule() async {
+  sl.registerLazySingleton<ScheduleRemoteDataSource>(
+    () =>
+        ScheduleRemoteDataSourceImpl(supabaseClient: Supabase.instance.client),
+  );
+
+  sl.registerLazySingleton<ScheduleRepository>(
+    () => ScheduleRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  sl.registerLazySingleton(() => SaveScheduleUseCase(repository: sl()));
+
+  sl.registerFactory(() => ScheduleBloc(saveScheduleUseCase: sl()));
 }
 
 Future<void> _initUser() async {

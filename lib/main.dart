@@ -1,4 +1,5 @@
 import 'package:doctor_booking_app/core/di/injection.dart';
+import 'package:doctor_booking_app/features/doctor/appointment/presantation/bloc/doctor_appointments_bloc.dart';
 import 'package:doctor_booking_app/features/doctor/auth/presentation/bloc/doctor_auth_bloc.dart';
 import 'package:doctor_booking_app/features/doctor/profile/presantation/bloc/profile_bloc.dart';
 import 'package:doctor_booking_app/features/doctor/registeration/presentation/bloc/doctor_bloc.dart';
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (context) => sl<SplashBloc>()),
         BlocProvider(create: (context) => sl<AuthBloc>()),
-
+        BlocProvider(create: (context) => sl<DoctorAppointmentsBloc>()),
         BlocProvider(create: (context) => sl<DoctorAuthBloc>()),
         BlocProvider(create: (context) => sl<DoctorBloc>()),
         BlocProvider(create: (context) => sl<ProfileBloc>()),

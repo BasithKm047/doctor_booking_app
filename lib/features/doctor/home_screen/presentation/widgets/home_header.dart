@@ -6,12 +6,16 @@ class HomeHeader extends StatelessWidget {
   final String doctorName;
   final String specialty;
   final String imageUrl;
+  final VoidCallback? onNotificationTap;
+  final int notificationCount;
 
   const HomeHeader({
     super.key,
     required this.doctorName,
     required this.specialty,
     required this.imageUrl,
+    this.onNotificationTap,
+    this.notificationCount = 0,
   });
 
   Widget _buildImage(String path) {
@@ -118,25 +122,39 @@ class HomeHeader extends StatelessWidget {
           Stack(
             children: [
               IconButton(
-                onPressed: () {},
+                onPressed: onNotificationTap,
                 icon: const Icon(
                   Icons.notifications,
                   color: AppColors.medConnectPrimary,
                   size: 28,
                 ),
               ),
-              Positioned(
-                right: 12,
-                top: 12,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
+              if (notificationCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        notificationCount > 9 ? '9+' : '$notificationCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ],

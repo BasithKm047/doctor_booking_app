@@ -2,7 +2,6 @@ import 'package:doctor_booking_app/features/doctor/registeration/data/model/doct
     show DoctorModel;
 import 'package:doctor_booking_app/features/doctor/registeration/domain/entities/doctor_registration_entity.dart';
 import 'package:doctor_booking_app/features/doctor/registeration/data/data_source/doctor_remote_data_source.dart';
-import 'package:doctor_booking_app/features/doctor/registeration/domain/entities/doctor_registration_entity.dart';
 import 'package:doctor_booking_app/features/doctor/registeration/domain/repositories/doctor_repositories.dart';
 
 class DoctorRepositoryImpl implements DoctorRepository {

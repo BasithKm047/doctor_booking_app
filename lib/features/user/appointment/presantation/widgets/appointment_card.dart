@@ -1,10 +1,63 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../home/domain/models/appointment.dart';
 
 class AppointmentCard extends StatelessWidget {
   final Appointment appointment;
-  const AppointmentCard({super.key, required this.appointment});
+  final VoidCallback? onReschedule;
+  final VoidCallback? onCancel;
+  final bool showActions;
+  final String? statusLabel;
+  final Color? statusColor;
+  const AppointmentCard({
+    super.key,
+    required this.appointment,
+    this.onReschedule,
+    this.onCancel,
+    this.showActions = true,
+    this.statusLabel,
+    this.statusColor,
+  });
+
+  Widget _buildDoctorImage() {
+    final path = appointment.imagePath.trim();
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return Image.network(
+        path,
+        height: 100,
+        width: 80,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _fallbackImage(),
+      );
+    }
+    if (path.startsWith('assets/')) {
+      return Image.asset(
+        path,
+        height: 100,
+        width: 80,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _fallbackImage(),
+      );
+    }
+    return Image.file(
+      File(path),
+      height: 100,
+      width: 80,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _fallbackImage(),
+    );
+  }
+
+  Widget _fallbackImage() {
+    return Container(
+      height: 100,
+      width: 80,
+      color: const Color(0xFFF1F5F9),
+      child: const Icon(Icons.person, color: Color(0xFF64748B)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +75,7 @@ class AppointmentCard extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(14),
-                child: Image.asset(
-                  appointment.imagePath,
-                  height: 100,
-                  width: 80,
-                  fit: BoxFit.cover,
-                ),
+                child: _buildDoctorImage(),
               ),
               const SizedBox(width: 20),
               Expanded(
@@ -58,7 +106,7 @@ class AppointmentCard extends StatelessWidget {
           const SizedBox(height: 16),
           _buildInfoRow(),
           const SizedBox(height: 16),
-          _buildActionRow(),
+          if (showActions) _buildActionRow() else _buildStatusChip(),
         ],
       ),
     );
@@ -94,34 +142,68 @@ class AppointmentCard extends StatelessWidget {
             'Reschedule',
             AppColors.medConnectPrimary,
             Colors.white,
+            onTap: onReschedule,
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: _buildButton(
             'Cancel',
-            const Color(0xFFF8FAFC),
-            const Color(0xFF475569),
+            const Color(0xFFDC2626),
+            Colors.white,
+            onTap: onCancel,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildButton(String text, Color bgColor, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(16),
+  Widget _buildStatusChip() {
+    final label = statusLabel ?? 'Past';
+    final color = statusColor ?? const Color(0xFF64748B);
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
+        ),
       ),
-      alignment: Alignment.center,
-      child: Text(
-        text,
-        style: TextStyle(
-          color: textColor,
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
+    );
+  }
+
+  Widget _buildButton(
+    String text,
+    Color bgColor,
+    Color textColor, {
+    VoidCallback? onTap,
+  }) {
+    return Material(
+      color: bgColor,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          alignment: Alignment.center,
+          child: Text(
+            text,
+            style: TextStyle(
+              color: textColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
         ),
       ),
     );

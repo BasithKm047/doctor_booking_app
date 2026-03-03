@@ -30,6 +30,12 @@ class _DoctorLoginPageState extends State<DoctorLoginPage> {
     super.dispose();
   }
 
+  void _clearFormState() {
+    _emailController.clear();
+    _passwordController.clear();
+    _formKey.currentState?.reset();
+  }
+
   void _submit() {
     FocusScope.of(context).unfocus();
 
@@ -43,6 +49,8 @@ class _DoctorLoginPageState extends State<DoctorLoginPage> {
     } else {
       context.read<DoctorAuthBloc>().add(DoctorLoginEvent(email, password));
     }
+
+    _clearFormState();
   }
 
   @override

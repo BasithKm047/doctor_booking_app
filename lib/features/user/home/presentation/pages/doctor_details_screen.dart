@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/user_doctor_entity.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../widgets/doctor_details_header.dart';
-import '../widgets/doctor_availability_picker.dart';
 import '../widgets/doctor_location_card.dart';
-import '../../../payment/presentation/pages/payment_page.dart';
 import 'appointment_booking_screen.dart';
 
 class DoctorDetailsScreen extends StatelessWidget {
@@ -68,36 +66,7 @@ class DoctorDetailsScreen extends StatelessWidget {
                 height: 1.6,
               ),
             ),
-            const SizedBox(height: 32),
-            const DoctorAvailabilityPicker(),
-            const SizedBox(height: 32),
-            const Text(
-              'Tell the doctor about your problem',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.medConnectPrimary,
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              maxLines: 4,
-              decoration: InputDecoration(
-                hintText:
-                    'Enter your symptoms or any specific concerns here...',
-                hintStyle: const TextStyle(
-                  color: Color(0xFF94A3B8),
-                  fontSize: 14,
-                ),
-                filled: true,
-                fillColor: const Color(0xFFF8FAFC),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.all(16),
-              ),
-            ),
+          
             const SizedBox(height: 32),
             const DoctorLocationCard(),
             const SizedBox(height: 40),

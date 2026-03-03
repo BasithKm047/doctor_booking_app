@@ -127,7 +127,9 @@ class _LoginPageState extends State<LoginPage> {
 
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const MainWrapper()),
+            MaterialPageRoute(
+              builder: (context) => const MainWrapper(initialIndex: 2),
+            ),
           );
         } else if (state is AuthError) {
           setState(() {

@@ -29,7 +29,7 @@ class DoctorLocationCard extends StatelessWidget {
                   top: Radius.circular(24),
                 ),
                 child: Image.asset(
-                  'assets/images/map_preview.png',
+                  'assets/images/map_image.png',
                   height: 180,
                   width: double.infinity,
                   fit: BoxFit.cover,

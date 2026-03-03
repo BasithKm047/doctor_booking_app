@@ -1,11 +1,11 @@
 import 'package:doctor_booking_app/core/service/client.dart';
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:doctor_booking_app/features/doctor/auth/presentation/bloc/doctor_auth_bloc.dart';
-import 'package:doctor_booking_app/features/doctor/auth/presentation/pages/doctor_login_page.dart';
 import 'package:doctor_booking_app/features/doctor/profile/presantation/bloc/profile_bloc.dart';
 import 'package:doctor_booking_app/features/doctor/profile/presantation/widgets/profile_header.dart';
 import 'package:doctor_booking_app/features/doctor/profile/presantation/widgets/profile_menu_item.dart';
 import 'package:doctor_booking_app/features/doctor/registeration/domain/entities/doctor_registration_entity.dart';
+import 'package:doctor_booking_app/features/user/start/presentation/pages/start_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -32,7 +32,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
       listener: (context, state) {
         if (state is DoctorUnauthenticated) {
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const DoctorLoginPage()),
+            MaterialPageRoute(builder: (_) => const StartPage()),
             (route) => false,
           );
         }
@@ -187,7 +187,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
                   onPressed: () {
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
-                        builder: (_) => const DoctorLoginPage(),
+                        builder: (_) => const StartPage(),
                       ),
                       (route) => false,
                     );

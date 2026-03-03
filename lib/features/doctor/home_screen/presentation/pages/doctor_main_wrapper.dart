@@ -25,7 +25,7 @@ class _DoctorMainWrapperState extends State<DoctorMainWrapper> {
   final List<Widget> _pages = [
     const DoctorHomePage(),
     const DoctorAppointmentsPage(),
-    const DoctorSchedulePage(),
+    const AvailabilityScreen(),
     const DoctorProfilePage(),
   ];
 
@@ -71,7 +71,7 @@ class _DoctorMainWrapperState extends State<DoctorMainWrapper> {
             BottomNavigationBarItem(
               icon: Icon(Icons.event_note_outlined),
               activeIcon: Icon(Icons.event_note),
-              label: 'SCHEDULE',
+              label: 'AVAILABILITY',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),

@@ -1,16 +1,22 @@
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:doctor_booking_app/features/doctor/shedule/domain/entities/availability_day_entity.dart';
 import 'package:doctor_booking_app/features/doctor/shedule/presantation/widgets/working_hour_card.dart';
+import 'package:doctor_booking_app/features/doctor/shedule/presantation/bloc/schedule_bloc.dart';
+import 'package:doctor_booking_app/features/doctor/shedule/presantation/bloc/schedule_event.dart';
+import 'package:doctor_booking_app/features/doctor/shedule/presantation/bloc/schedule_state.dart';
+import 'package:doctor_booking_app/core/widgets/custom_snack_bar.dart';
+import 'package:doctor_booking_app/core/di/injection.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 
-class DoctorSchedulePage extends StatefulWidget {
-  const DoctorSchedulePage({super.key});
+class AvailabilityScreen extends StatefulWidget {
+  const AvailabilityScreen({super.key});
 
   @override
-  State<DoctorSchedulePage> createState() => _DoctorSchedulePageState();
+  State<AvailabilityScreen> createState() => _AvailabilityScreenState();
 }
 
-class _DoctorSchedulePageState extends State<DoctorSchedulePage> {
+class _AvailabilityScreenState extends State<AvailabilityScreen> {
   final List<AvailabilityDay> _availability = [
     const AvailabilityDay(dayName: 'Monday', shortDayName: 'M', isActive: true),
     const AvailabilityDay(
@@ -45,77 +51,99 @@ class _DoctorSchedulePageState extends State<DoctorSchedulePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.medConnectBackground,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.medConnectTitle),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Availability Settings',
-          style: TextStyle(
-            color: AppColors.medConnectTitle,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildStatusSection(),
-                  const SizedBox(height: 24),
-                  _buildSectionHeader(Icons.calendar_month, 'Available Days'),
-                  const SizedBox(height: 16),
-                  _buildDaySelector(),
-                  const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildSectionHeader(
-                        Icons.access_time_filled,
-                        'Working Hours',
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        child: const Text(
-                          'Apply to all',
-                          style: TextStyle(
-                            color: AppColors.medConnectPrimary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
+    return BlocProvider(
+      create: (context) => sl<ScheduleBloc>(),
+      child: BlocConsumer<ScheduleBloc, ScheduleState>(
+        listener: (context, state) {
+          if (state is ScheduleSuccess) {
+            CustomSnackBar.show(context, 'Availability saved successfully');
+          } else if (state is ScheduleFailure) {
+            CustomSnackBar.show(context, state.error, isError: true);
+          }
+        },
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: AppColors.medConnectBackground,
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: AppColors.medConnectTitle,
+                ),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: const Text(
+                'Availability Settings',
+                style: TextStyle(
+                  color: AppColors.medConnectTitle,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              centerTitle: true,
+            ),
+            body: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildStatusSection(),
+                        const SizedBox(height: 24),
+                        _buildSectionHeader(
+                          Icons.calendar_month,
+                          'Available Days',
+                        ),
+                        const SizedBox(height: 16),
+                        _buildDaySelector(),
+                        const SizedBox(height: 32),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildSectionHeader(
+                              Icons.access_time_filled,
+                              'Working Hours',
+                            ),
+                            TextButton(
+                              onPressed: () {},
+                              child: const Text(
+                                'Apply to all',
+                                style: TextStyle(
+                                  color: AppColors.medConnectPrimary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ..._availability.map(
+                          (day) => WorkingHourCard(
+                            day: day,
+                            onToggle: (val) {
+                              setState(() {
+                                final index = _availability.indexOf(day);
+                                _availability[index] = day.copyWith(
+                                  isActive: val,
+                                );
+                              });
+                            },
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  ..._availability.map(
-                    (day) => WorkingHourCard(
-                      day: day,
-                      onToggle: (val) {
-                        setState(() {
-                          final index = _availability.indexOf(day);
-                          _availability[index] = day.copyWith(isActive: val);
-                        });
-                      },
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                _buildSaveButton(context, state),
+              ],
             ),
-          ),
-          _buildSaveButton(),
-        ],
+          );
+        },
       ),
     );
   }
@@ -240,7 +268,7 @@ class _DoctorSchedulePageState extends State<DoctorSchedulePage> {
     );
   }
 
-  Widget _buildSaveButton() {
+  Widget _buildSaveButton(BuildContext context, ScheduleState state) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -254,7 +282,13 @@ class _DoctorSchedulePageState extends State<DoctorSchedulePage> {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: state is ScheduleLoading
+            ? null
+            : () {
+                context.read<ScheduleBloc>().add(
+                  SaveScheduleEvent(_availability),
+                );
+              },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.medConnectPrimary,
           minimumSize: const Size(double.infinity, 56),
@@ -263,21 +297,25 @@ class _DoctorSchedulePageState extends State<DoctorSchedulePage> {
           ),
           elevation: 0,
         ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.save, color: Colors.white),
-            SizedBox(width: 12),
-            Text(
-              'Save Availability',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+        child: state is ScheduleLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              )
+            : const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.save, color: Colors.white),
+                  SizedBox(width: 12),
+                  Text(
+                    'Save Availability',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
