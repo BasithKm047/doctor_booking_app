@@ -1,4 +1,5 @@
 import 'package:doctor_booking_app/core/di/injection.dart';
+import 'package:doctor_booking_app/core/service/appointments_realtime_service.dart';
 import 'package:doctor_booking_app/core/widgets/custom_snack_bar.dart';
 import 'package:doctor_booking_app/features/user/appointment/domain/repositories/user_appointment_repository.dart';
 import 'package:flutter/material.dart';
@@ -20,12 +21,29 @@ class AppointmentsPage extends StatefulWidget {
 
 class _AppointmentsPageState extends State<AppointmentsPage> {
   late Future<List<Appointment>> _appointmentsFuture;
+  RealtimeChannel? _appointmentsRealtimeChannel;
+  bool _isRefreshingFromRealtime = false;
   static const Duration _slotDuration = Duration(minutes: 30);
 
   @override
   void initState() {
     super.initState();
     _appointmentsFuture = _loadAppointments();
+    _subscribeToRealtime();
+  }
+
+  void _subscribeToRealtime() {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    _appointmentsRealtimeChannel = sl<AppointmentsRealtimeService>()
+        .subscribeToUserAppointments(
+          userId: userId,
+          onChange: (_) {
+            if (!mounted) return;
+            _refreshFromRealtime();
+          },
+        );
   }
 
   Future<List<Appointment>> _loadAppointments() async {
@@ -181,7 +199,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     if (!mounted || action == null) return;
 
     if (action == _RescheduleAction.openBooking) {
-      _openRescheduleInBookingScreen(appointment);
+      await _openRescheduleInBookingScreen(appointment);
       return;
     }
 
@@ -221,13 +239,17 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   leading: const Icon(Icons.calendar_today_rounded),
                   title: const Text('Reschedule in booking screen'),
                   subtitle: const Text('Navigate and pick doctor availability'),
-                  onTap: () => Navigator.pop(context, _RescheduleAction.openBooking),
+                  onTap: () =>
+                      Navigator.pop(context, _RescheduleAction.openBooking),
                 ),
                 ListTile(
                   leading: const Icon(Icons.access_time_rounded),
                   title: const Text('Quick reschedule here'),
-                  subtitle: const Text('Select from available date and time slots'),
-                  onTap: () => Navigator.pop(context, _RescheduleAction.quickSlot),
+                  subtitle: const Text(
+                    'Select from available date and time slots',
+                  ),
+                  onTap: () =>
+                      Navigator.pop(context, _RescheduleAction.quickSlot),
                 ),
               ],
             ),
@@ -237,7 +259,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     );
   }
 
-  void _openRescheduleInBookingScreen(Appointment appointment) {
+  Future<void> _openRescheduleInBookingScreen(Appointment appointment) async {
     if (appointment.doctorId.isEmpty) {
       CustomSnackBar.show(
         context,
@@ -257,12 +279,18 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       bio: '',
     );
 
-    Navigator.push(
+    final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) => AppointmentBookingScreen(doctor: doctor),
+        builder: (context) => AppointmentBookingScreen(
+          doctor: doctor,
+          rescheduleAppointmentId: appointment.id,
+        ),
       ),
     );
+    if (result == true && mounted) {
+      await _refresh();
+    }
   }
 
   Future<DateTime?> _pickDoctorAvailableSlot(Appointment appointment) async {
@@ -312,7 +340,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                       itemBuilder: (context, index) {
                         final slot = slots[index];
                         return ListTile(
-                          title: Text(DateFormat('EEE, MMM dd, yyyy').format(slot)),
+                          title: Text(
+                            DateFormat('EEE, MMM dd, yyyy').format(slot),
+                          ),
                           subtitle: Text(DateFormat('hh:mm a').format(slot)),
                           onTap: () => Navigator.pop(context, slot),
                         );
@@ -351,10 +381,23 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       final end = _parseTimeOfDay(endText);
       if (day == null || start == null || end == null) continue;
 
-      var cursor = DateTime(day.year, day.month, day.day, start.hour, start.minute);
-      final endDateTime = DateTime(day.year, day.month, day.day, end.hour, end.minute);
+      var cursor = DateTime(
+        day.year,
+        day.month,
+        day.day,
+        start.hour,
+        start.minute,
+      );
+      final endDateTime = DateTime(
+        day.year,
+        day.month,
+        day.day,
+        end.hour,
+        end.minute,
+      );
 
-      while (cursor.isBefore(endDateTime) || cursor.isAtSameMomentAs(endDateTime)) {
+      while (cursor.isBefore(endDateTime) ||
+          cursor.isAtSameMomentAs(endDateTime)) {
         if (cursor.isAfter(now)) {
           slots.add(cursor);
         }
@@ -385,6 +428,22 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       _appointmentsFuture = _loadAppointments();
     });
     await _appointmentsFuture;
+  }
+
+  Future<void> _refreshFromRealtime() async {
+    if (_isRefreshingFromRealtime) return;
+    _isRefreshingFromRealtime = true;
+    try {
+      await _refresh();
+    } finally {
+      _isRefreshingFromRealtime = false;
+    }
+  }
+
+  @override
+  void dispose() {
+    sl<AppointmentsRealtimeService>().unsubscribe(_appointmentsRealtimeChannel);
+    super.dispose();
   }
 
   @override
@@ -516,7 +575,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       case 'user_canceled':
       case 'cancelled':
       case 'canceled':
-        return 'User Canceled';
+        return 'Canceled';
       case 'confirmed':
         return 'Approved';
       case 'past':

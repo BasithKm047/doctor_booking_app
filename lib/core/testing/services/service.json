@@ -1,0 +1,5 @@
+﻿{
+  "clinicName": "City Care Clinic",
+  "doctor": "Dr. Sharma",
+  "availableSlots": ["10:00 AM", "11:00 AM", "4:00 PM"]
+}

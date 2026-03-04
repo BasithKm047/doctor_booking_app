@@ -132,13 +132,33 @@ class UserAppointmentRemoteDataSourceImpl
   @override
   Future<void> cancelAppointment(String appointmentId) async {
     try {
+      final userId = supabaseClient.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final before = await _getAppointmentById(appointmentId);
+      if (before == null) {
+        throw Exception('Appointment not found');
+      }
+      if ((before['user_id'] ?? '').toString() != userId) {
+        throw Exception('You can only cancel your own appointment');
+      }
+
       await supabaseClient
           .from('appointments')
           .update({
-            'status': 'user_cancelled',
+            'status': 'canceled',
             'updated_at': DateTime.now().toIso8601String(),
           })
-          .eq('id', appointmentId);
+          .eq('id', before['id']);
+
+      final after = await _getAppointmentById(appointmentId);
+      if (after == null || !_isCanceledStatus((after['status'] ?? '').toString())) {
+        throw Exception(
+          'Cancel failed. Please check Supabase RLS policy for appointments update.',
+        );
+      }
       AppLogger.info('Successfully cancelled appointment: $appointmentId');
     } catch (e, stackTrace) {
       AppLogger.error('Error cancelling appointment', e, stackTrace);
@@ -153,6 +173,19 @@ class UserAppointmentRemoteDataSourceImpl
     required String appointmentTime,
   }) async {
     try {
+      final userId = supabaseClient.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final before = await _getAppointmentById(appointmentId);
+      if (before == null) {
+        throw Exception('Appointment not found');
+      }
+      if ((before['user_id'] ?? '').toString() != userId) {
+        throw Exception('You can only reschedule your own appointment');
+      }
+
       await supabaseClient
           .from('appointments')
           .update({
@@ -161,11 +194,74 @@ class UserAppointmentRemoteDataSourceImpl
             'status': 'pending',
             'updated_at': DateTime.now().toIso8601String(),
           })
-          .eq('id', appointmentId);
+          .eq('id', before['id']);
+
+      final after = await _getAppointmentById(appointmentId);
+      if (after == null) {
+        throw Exception('Reschedule failed. Appointment was not found after update.');
+      }
+
+      final afterDate = (after['appointment_date'] ?? '').toString();
+      final afterTime = (after['appointment_time'] ?? '').toString();
+      final afterStatus = (after['status'] ?? '').toString().toLowerCase();
+      final sameDate = afterDate.startsWith(appointmentDate);
+      final sameTime = afterTime.startsWith(_timePrefix(appointmentTime));
+      final isPending = afterStatus == 'pending';
+
+      if (!sameDate || !sameTime || !isPending) {
+        throw Exception(
+          'Reschedule failed. Please check Supabase RLS policy for appointments update.',
+        );
+      }
       AppLogger.info('Successfully rescheduled appointment: $appointmentId');
     } catch (e, stackTrace) {
       AppLogger.error('Error rescheduling appointment', e, stackTrace);
       rethrow;
     }
+  }
+
+  Future<Map<String, dynamic>?> _getAppointmentById(String appointmentId) async {
+    final rows = await supabaseClient
+        .from('appointments')
+        .select('id, user_id, status, appointment_date, appointment_time')
+        .eq('id', appointmentId)
+        .limit(1);
+
+    final firstPass = List<Map<String, dynamic>>.from(rows);
+    if (firstPass.isNotEmpty) {
+      return firstPass.first;
+    }
+
+    final parsedInt = int.tryParse(appointmentId);
+    if (parsedInt == null) {
+      return null;
+    }
+
+    final intRows = await supabaseClient
+        .from('appointments')
+        .select('id, user_id, status, appointment_date, appointment_time')
+        .eq('id', parsedInt)
+        .limit(1);
+    final secondPass = List<Map<String, dynamic>>.from(intRows);
+    if (secondPass.isEmpty) {
+      return null;
+    }
+    return secondPass.first;
+  }
+
+  bool _isCanceledStatus(String status) {
+    final normalized = status.toLowerCase();
+    return normalized == 'canceled' ||
+        normalized == 'cancelled' ||
+        normalized == 'user_canceled' ||
+        normalized == 'user_cancelled';
+  }
+
+  String _timePrefix(String value) {
+    final trimmed = value.trim();
+    if (trimmed.length >= 5) {
+      return trimmed.substring(0, 5);
+    }
+    return trimmed;
   }
 }

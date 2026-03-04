@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:doctor_booking_app/core/widgets/custom_snack_bar.dart';
+import 'package:doctor_booking_app/features/user/appointment/domain/repositories/user_appointment_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import '../../domain/entities/user_doctor_entity.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../widgets/doctor_availability_picker.dart';
@@ -18,8 +20,13 @@ import '../../../payment/presentation/pages/payment_page.dart';
 
 class AppointmentBookingScreen extends StatefulWidget {
   final UserDoctorEntity doctor;
+  final String? rescheduleAppointmentId;
 
-  const AppointmentBookingScreen({super.key, required this.doctor});
+  const AppointmentBookingScreen({
+    super.key,
+    required this.doctor,
+    this.rescheduleAppointmentId,
+  });
 
   @override
   State<AppointmentBookingScreen> createState() =>
@@ -34,6 +41,16 @@ class _AppointmentBookingScreenState extends State<AppointmentBookingScreen> {
   bool _isLocationSelected = false;
   DateTime? _selectedDate;
   String? _selectedTime;
+
+  bool get _isRescheduleFlow => widget.rescheduleAppointmentId != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isRescheduleFlow) {
+      _isLocationSelected = true;
+    }
+  }
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
@@ -56,9 +73,9 @@ class _AppointmentBookingScreenState extends State<AppointmentBookingScreen> {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Confirm Appointment',
-          style: TextStyle(
+        title: Text(
+          _isRescheduleFlow ? 'Reschedule Appointment' : 'Confirm Appointment',
+          style: const TextStyle(
             color: Color(0xFF0F172A),
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -216,7 +233,8 @@ class _AppointmentBookingScreenState extends State<AppointmentBookingScreen> {
                   const SizedBox(height: 40),
                   ElevatedButton(
                     onPressed: () {
-                      if (_patientNameController.text.isEmpty) {
+                      if (!_isRescheduleFlow &&
+                          _patientNameController.text.isEmpty) {
                         CustomSnackBar.show(
                           context,
                           'Please enter patient name',
@@ -245,6 +263,11 @@ class _AppointmentBookingScreenState extends State<AppointmentBookingScreen> {
                           context,
                           'You must be logged in to book an appointment',
                         );
+                        return;
+                      }
+
+                      if (_isRescheduleFlow) {
+                        _submitReschedule();
                         return;
                       }
 
@@ -280,9 +303,11 @@ class _AppointmentBookingScreenState extends State<AppointmentBookingScreen> {
                       elevation: 4,
                       shadowColor: AppColors.medConnectPrimary.withOpacity(0.4),
                     ),
-                    child: const Text(
-                      'Review Payment',
-                      style: TextStyle(
+                    child: Text(
+                      _isRescheduleFlow
+                          ? 'Update Appointment'
+                          : 'Review Payment',
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -298,5 +323,30 @@ class _AppointmentBookingScreenState extends State<AppointmentBookingScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _submitReschedule() async {
+    final appointmentId = widget.rescheduleAppointmentId;
+    if (appointmentId == null || _selectedDate == null || _selectedTime == null) {
+      return;
+    }
+
+    try {
+      await sl<UserAppointmentRepository>().rescheduleAppointment(
+        appointmentId: appointmentId,
+        appointmentDate: DateFormat('yyyy-MM-dd').format(_selectedDate!),
+        appointmentTime: _selectedTime!,
+      );
+      if (!mounted) return;
+      CustomSnackBar.show(context, 'Appointment rescheduled');
+      Navigator.pop(context, true);
+    } catch (_) {
+      if (!mounted) return;
+      CustomSnackBar.show(
+        context,
+        'Failed to reschedule appointment',
+        isError: true,
+      );
+    }
   }
 }

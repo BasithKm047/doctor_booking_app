@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../home/domain/entities/user_doctor_entity.dart';
-import '../../../home/presentation/pages/appointment_booking_screen.dart';
 import '../../../home/presentation/widgets/doctor_card.dart';
 import '../../../home/presentation/pages/main_wrapper.dart';
 

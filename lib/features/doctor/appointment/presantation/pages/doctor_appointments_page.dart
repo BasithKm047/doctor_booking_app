@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:doctor_booking_app/core/di/injection.dart';
+import 'package:doctor_booking_app/core/service/appointments_realtime_service.dart';
 import 'package:doctor_booking_app/core/service/client.dart';
 import 'package:doctor_booking_app/core/theme/app_colors.dart';
 import 'package:doctor_booking_app/core/widgets/custom_snack_bar.dart';
@@ -10,6 +12,7 @@ import 'package:doctor_booking_app/features/doctor/appointment/presantation/bloc
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DoctorAppointmentsPage extends StatefulWidget {
   const DoctorAppointmentsPage({super.key});
@@ -21,11 +24,27 @@ class DoctorAppointmentsPage extends StatefulWidget {
 class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage> {
   List<AppointmentRequest> _cachedAppointments = const [];
   bool _isUpdating = false;
+  RealtimeChannel? _doctorAppointmentsRealtimeChannel;
 
   @override
   void initState() {
     super.initState();
     _fetchAppointments();
+    _subscribeToRealtime();
+  }
+
+  void _subscribeToRealtime() {
+    final doctorId = supabase.auth.currentUser?.id;
+    if (doctorId == null) return;
+
+    _doctorAppointmentsRealtimeChannel = sl<AppointmentsRealtimeService>()
+        .subscribeToDoctorAppointments(
+          doctorId: doctorId,
+          onChange: (_) {
+            if (!mounted) return;
+            _fetchAppointments();
+          },
+        );
   }
 
   void _fetchAppointments() {
@@ -113,6 +132,14 @@ class _DoctorAppointmentsPageState extends State<DoctorAppointmentsPage> {
             Icon(Icons.person, color: AppColors.medConnectPrimary),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    sl<AppointmentsRealtimeService>().unsubscribe(
+      _doctorAppointmentsRealtimeChannel,
+    );
+    super.dispose();
   }
 
   @override

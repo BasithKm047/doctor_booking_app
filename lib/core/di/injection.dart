@@ -1,3 +1,4 @@
+import 'package:doctor_booking_app/core/service/appointments_realtime_service.dart';
 import 'package:doctor_booking_app/features/doctor/appointment/data/datasources/doctor_appointment_remote_data_source.dart';
 import 'package:doctor_booking_app/features/doctor/appointment/data/repositories/doctor_appointment_repository_impl.dart';
 import 'package:doctor_booking_app/features/doctor/appointment/domain/repositories/doctor_appointment_repository.dart';
@@ -60,6 +61,9 @@ final sl = GetIt.instance;
 Future<void> setupInjection() async {
   // Core
   sl.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
+  sl.registerLazySingleton<AppointmentsRealtimeService>(
+    () => AppointmentsRealtimeService(supabaseClient: sl()),
+  );
 
   await _initUser();
   await _initDoctor();
